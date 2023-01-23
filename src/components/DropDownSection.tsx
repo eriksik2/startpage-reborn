@@ -17,7 +17,7 @@ export class DropDownSection extends React.Component<DropDownSectionProps, DropD
     constructor(props: DropDownSectionProps) {
         super(props);
         this.state = {
-            isOpen: false,
+            isOpen: true,
         };
 
         this.handleToggle = this.handleToggle.bind(this);

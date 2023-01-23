@@ -19,7 +19,6 @@ export class Widget extends React.Component<WidgetProps, WidgetState> {
 
     handleDragStart(event: React.DragEvent<HTMLDivElement>) {
         const text = this.props.data.toJson();
-        console.log(text);
         event.dataTransfer.setData("text/plain", text);
     }
 

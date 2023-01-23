@@ -26,8 +26,29 @@ export class App extends React.Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
     const grid = Array(3).fill(null).map(() => Array(5).fill(null));
-    grid[0][0] = {
-      item: new WidgetDescriptor(DateTimeComponent, {}),
+    grid[1][0] = {
+      item: new WidgetDescriptor(DateTimeComponent, {
+        showTime: false,
+        showYear: false,
+        showDayOfWeek: false,
+      }),
+      width: 1,
+      height: 1,
+    };
+    grid[1][2] = {
+      item: new WidgetDescriptor(DateTimeComponent, {
+        showYear: false,
+        showDate: false,
+      }),
+      width: 1,
+      height: 1,
+    };
+    grid[1][4] = {
+      item: new WidgetDescriptor(DateTimeComponent, {
+        showTime: false,
+        showDayOfWeek: false,
+        showDate: false,
+      }),
       width: 1,
       height: 1,
     };
@@ -44,6 +65,8 @@ export class App extends React.Component<{}, AppState> {
 
     this.handleSwapMode = this.handleSwapMode.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
+    this.handleDragStart = this.handleDragStart.bind(this);
+    this.handleDragEnd = this.handleDragEnd.bind(this);
     this.handleDrop = this.handleDrop.bind(this);
     this.handleChangeSelected = this.handleChangeSelected.bind(this);
   }
@@ -63,8 +86,26 @@ export class App extends React.Component<{}, AppState> {
     }
   }
 
+  handleDragStart(event: React.DragEvent<HTMLDivElement>, col: number, row: number) {
+    if(this.state.mode == 'view') return;
+    if(this.state.grid[col][row] == null) return;
+    const text = this.state.grid[col][row]!.item.toJson();
+    event.dataTransfer.setData("text/plain", text);
+  }
+
+  handleDragEnd(event: React.DragEvent<HTMLDivElement>, col: number, row: number) {
+    if(this.state.mode == 'view') return;
+    if(event.dataTransfer.dropEffect == 'none') return;
+
+    const grid = this.state.grid;
+    grid[col][row] = null;
+    this.setState({
+      grid
+    });
+  }
+
   handleDrop(event: React.DragEvent<HTMLDivElement>, col: number, row: number) {
-    console.log(event.dataTransfer.getData("text/plain"));
+    if(this.state.mode == 'view') return;
     const data = WidgetDescriptor.fromJson(event.dataTransfer.getData("text/plain"));;
     const grid = this.state.grid;
     grid[col][row] = {
@@ -92,14 +133,17 @@ export class App extends React.Component<{}, AppState> {
       return this.renderEmptyPart(col, row);
     }
     const { item, width, height } = startpart;
-    let className = `col-span-${width} col-start-${col} row-span-${height} row-start-${row} bg-slate-200 rounded`;
+    let className = `col-span-${width} col-start-${col} row-span-${height} row-start-${row}`;
     if(this.state.mode == 'edit' && this.state.selected?.col == col && this.state.selected?.row == row) {
       className += " border-2 border-slate-300";
     }
     return <div
+      draggable={this.state.mode == 'edit'}
       className={className}
       key={`${col}-${row}`}
       onClick={() => this.handleSelect(col, row)}
+      onDragStart={(e) => this.handleDragStart(e, col, row)}
+      onDragEnd={(e) => this.handleDragEnd(e, col, row)}
       onDrop={(e) => this.handleDrop(e, col, row)}
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={(e) => e.preventDefault()}

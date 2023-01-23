@@ -21,13 +21,10 @@ type AppState = {
   sidebarWidth: number;
 };
 
-const GRID_WIDTH = 5;
-const GRID_HEIGHT = 3;
-
 export class App extends React.Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
-    const grid = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(null));
+    const grid = Array(3).fill(null).map(() => Array(5).fill(null));
     grid[0][0] = {
       item: new WidgetDescriptor(DateTimeComponent, {}),
       width: 1,
@@ -141,7 +138,7 @@ export class App extends React.Component<{}, AppState> {
         <div className="flex flex-row items-center h-full">
           {/** Main content and sidebar */}
           <div className={`
-            grid grid-cols-${GRID_WIDTH} grid-rows-${GRID_HEIGHT} w-full aspect-video
+            grid grid-cols-5 grid-rows-3 w-full aspect-[16/8]
             ${this.state.mode == 'edit'
               ? "rounded border-2 border-slate-200"
               : ""

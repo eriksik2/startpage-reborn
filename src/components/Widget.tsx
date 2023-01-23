@@ -13,14 +13,18 @@ export class Widget extends React.Component<WidgetProps, WidgetState> {
         super(props);
         this.state = {
         };
+
+        this.handleDragStart = this.handleDragStart.bind(this);
     }
 
     handleDragStart(event: React.DragEvent<HTMLDivElement>) {
-        event.dataTransfer.setData("text/plain", this.props.data.toJson());
+        const text = this.props.data.toJson();
+        console.log(text);
+        event.dataTransfer.setData("text/plain", text);
     }
 
     render() {
-        return <div draggable>
+        return <div draggable onDragStart={this.handleDragStart}>
             {this.props.data.buildStartpart()}
         </div>
     }

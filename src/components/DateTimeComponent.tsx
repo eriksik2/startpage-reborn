@@ -1,5 +1,6 @@
 import React from "react";
 import dateFormat from "dateformat";
+import { EditablePropTypes } from "startparts/WidgetDescriptor";
 
 
 type StateType = {
@@ -19,6 +20,13 @@ export class DateTimeComponent extends React.Component<PropsType, StateType> {
     showDayOfWeek: true,
     showDate: true,
     showYear: true,
+  };
+
+  static editablePropTypes: EditablePropTypes<PropsType> = {
+    showTime: "bool",
+    showDayOfWeek: "bool",
+    showDate: "bool",
+    showYear: "bool",
   };
 
   constructor(props: PropsType) {

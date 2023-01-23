@@ -1,12 +1,13 @@
 import React from "react";
-import { WidgetDescriptor } from "startparts/WidgetDescriptor";
+import { EditableWidgetType, WidgetDescriptor } from "startparts/WidgetDescriptor";
 import { DateTimeComponent } from "./DateTimeComponent";
 import { DropDownSection } from "./DropDownSection";
 import { EditSidebar } from "./EditSidebar";
 import { Widget } from "./Widget";
+import { WidgetSettingsEdit } from "./WidgetSettingsEdit";
 
 
-type PositionedStartpart<P extends React.ComponentType<any>> = {
+type PositionedStartpart<P extends EditableWidgetType<any>> = {
   item: WidgetDescriptor<P>;
   width: number;
   height: number;
@@ -20,23 +21,23 @@ type AppState = {
   sidebarWidth: number;
 };
 
+const GRID_WIDTH = 5;
+const GRID_HEIGHT = 3;
 
 export class App extends React.Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
+    const grid = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(null));
+    grid[0][0] = {
+      item: new WidgetDescriptor(DateTimeComponent, {}),
+      width: 1,
+      height: 1,
+    };
     this.state = {
       widgets: [
         new WidgetDescriptor(DateTimeComponent, {}),
       ],
-      grid: [
-        [
-          {
-            item: new WidgetDescriptor(DateTimeComponent, {}),
-            width: 1,
-            height: 1,
-          }
-        ],
-      ],
+      grid: grid,
       mode: "view",
       selected: null,
       sidebarWidth: 100,
@@ -45,6 +46,7 @@ export class App extends React.Component<{}, AppState> {
     this.handleSwapMode = this.handleSwapMode.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
     this.handleDrop = this.handleDrop.bind(this);
+    this.handleChangeSelected = this.handleChangeSelected.bind(this);
   }
 
   handleSwapMode() {
@@ -60,9 +62,21 @@ export class App extends React.Component<{}, AppState> {
   }
 
   handleDrop(event: React.DragEvent<HTMLDivElement>, col: number, row: number) {
+    console.log(event.dataTransfer.getData("text/plain"));
     const data = WidgetDescriptor.fromJson(event.dataTransfer.getData("text/plain"));;
     const grid = this.state.grid;
     grid[col][row] = {
+      item: data,
+      width: 1,
+      height: 1,
+    };
+    this.setState({ grid });
+  }
+
+  handleChangeSelected(data: WidgetDescriptor<any>) {
+    if(this.state.selected == null) return;
+    const grid = this.state.grid;
+    grid[this.state.selected.col][this.state.selected.row] = {
       item: data,
       width: 1,
       height: 1,
@@ -81,31 +95,36 @@ export class App extends React.Component<{}, AppState> {
       className += " border-2 border-slate-300";
     }
     return <div
-      onClick={() => this.handleSelect(col, row)}
       className={className}
       key={`${col}-${row}`}
+      onClick={() => this.handleSelect(col, row)}
+      onDrop={(e) => this.handleDrop(e, col, row)}
+      onDragOver={(e) => e.preventDefault()}
+      onDragEnter={(e) => e.preventDefault()}
     >
         {item.buildStartpart()}
+    </div>
+  }
+
+  renderEmptyPart(col: number, row: number) {
+    return <div>
+      {/** Empty part */}
+      {this.state.mode == 'edit'
+        ? <div
+            className="w-full h-full flex items-center justify-center border-2 border-slate-200"
+            key={`${col}-${row}`}
+            onDrop={(e) => this.handleDrop(e, col, row)}
+            onDragOver={(e) => e.preventDefault()}
+            onDragEnter={(e) => e.preventDefault()}
+        >+</div>
+        : <div key={`${col}-${row}`}></div>
+      }
     </div>
   }
 
   getSelected() {
     if(this.state.selected == null) return null;
     return this.state.grid[this.state.selected.col][this.state.selected.row];
-  }
-
-  renderEmptyPart(col: number, row: number) {
-    console.log(this.state.mode);
-    return <div>
-      {/** Empty part */}
-      {this.state.mode == 'edit'
-        ? <div
-            className="w-full h-full bg-slate-200 rounded border-2 border-slate-200"
-            onDrop={(e) => this.handleDrop(e, col, row)}
-        >+</div>
-        : null
-      }
-    </div>
   }
 
   render() {
@@ -122,7 +141,7 @@ export class App extends React.Component<{}, AppState> {
         <div className="flex flex-row items-center h-full">
           {/** Main content and sidebar */}
           <div className={`
-            grid grid-cols-5 grid-rows-3 w-full aspect-video
+            grid grid-cols-${GRID_WIDTH} grid-rows-${GRID_HEIGHT} w-full aspect-video
             ${this.state.mode == 'edit'
               ? "rounded border-2 border-slate-200"
               : ""
@@ -134,7 +153,14 @@ export class App extends React.Component<{}, AppState> {
             mode={this.state.mode == 'edit' ? 'opened' : 'closed'}
           >
             {/** Sidebar content */}
-            <p>Selected: {this.getSelected()?.item.componentType.name}</p>
+            <DropDownSection title="Selected">
+              {this.getSelected() != null
+                ? <WidgetSettingsEdit
+                  data={this.getSelected()!.item}
+                  onChange={this.handleChangeSelected}/>
+                : <div>Nothing selected</div>
+              }
+            </DropDownSection>
             <DropDownSection title="Widgets">
               {this.state.widgets.map((widget, index) => (
                 <div key={index}>

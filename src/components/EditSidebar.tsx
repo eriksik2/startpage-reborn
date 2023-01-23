@@ -29,7 +29,7 @@ export class EditSidebar extends React.Component<EditSidebarProps, EditSidebarSt
                 bg-slate-200 rounded
                 flex flex-row items-stretch
                 ${this.props.mode == 'opened'
-                ? `w-[100px]`
+                ? `w-1/4`
                 : "hidden"
                 }`}
         >

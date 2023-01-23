@@ -26,6 +26,7 @@ export class EditSidebar extends React.Component<EditSidebarProps, EditSidebarSt
     render() {
         return <div
             className={`
+                h-full
                 bg-slate-200 rounded
                 flex flex-row items-stretch
                 ${this.props.mode == 'opened'

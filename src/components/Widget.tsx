@@ -8,7 +8,7 @@ type WidgetProps = {
 type WidgetState = {
 }
 
-export class Widget extends React.Component<WidgetProps, WidgetState> {
+export class WidgetPreview extends React.Component<WidgetProps, WidgetState> {
     constructor(props: WidgetProps) {
         super(props);
         this.state = {
@@ -23,7 +23,11 @@ export class Widget extends React.Component<WidgetProps, WidgetState> {
     }
 
     render() {
-        return <div draggable onDragStart={this.handleDragStart}>
+        return <div
+            draggable
+            onDragStart={this.handleDragStart}
+            className="p-2 border border-gray-300 m-2 bg-white"
+        >
             {this.props.data.buildWidget()}
         </div>
     }

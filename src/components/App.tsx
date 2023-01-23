@@ -4,7 +4,7 @@ import { DateTimeComponent } from "./DateTimeComponent";
 import { DropDownSection } from "./DropDownSection";
 import { EditSidebar } from "./EditSidebar";
 import { QuoteComponent } from "./QuoteComponent";
-import { Widget } from "./Widget";
+import { WidgetPreview } from "./Widget";
 import { WidgetSettingsEdit } from "./WidgetSettingsEdit";
 
 
@@ -219,7 +219,7 @@ export class App extends React.Component<{}, AppState> {
             <DropDownSection title="Widgets">
               {this.state.widgets.map((widget, index) => (
                 <div key={index}>
-                  <Widget data={widget}/>
+                  <WidgetPreview data={widget}/>
                 </div>
               ))}
             </DropDownSection>

@@ -97,6 +97,45 @@ export class App extends React.Component<{}, AppState> {
     this.handleChangeSelected = this.handleChangeSelected.bind(this);
   }
 
+  componentDidMount(): void {
+    this.loadFromLocalStorage();
+  }
+
+  componentDidUpdate(prevProps: Readonly<{}>, prevState: Readonly<AppState>, snapshot?: any): void {
+    this.saveToLocalStorage();
+  }
+
+  saveToLocalStorage() {
+    const grid = this.state.grid.map(col => col.map(item => {
+      if(item == null) return null;
+      return {
+        item: item.item.toJson(),
+        width: item.width,
+        height: item.height,
+      };
+    }));
+    const json = JSON.stringify(grid);
+    localStorage.setItem("grid", json);
+  }
+
+  loadFromLocalStorage() {
+    const json = JSON.parse(localStorage.getItem("grid") || "null");
+    if(json == null) return;
+    if(json.length != 3) return;
+    if(json[0].length != 5) return;
+    const grid = json.map((col: any) => col.map((item: any) => {
+      if(item == null) return null;
+      const descriptor = WidgetDescriptor.fromJson(item.item);
+      if(descriptor == null) return null;
+      return {
+        item: descriptor,
+        width: item.width,
+        height: item.height,
+      };
+    }));
+    this.setState({ grid });
+  }
+
   handleSwapMode() {
     this.setState({
       mode: this.state.mode == 'edit' ? 'view' : 'edit'

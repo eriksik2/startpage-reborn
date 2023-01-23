@@ -52,6 +52,15 @@ export class App extends React.Component<{}, AppState> {
       width: 1,
       height: 1,
     };
+    grid[2][2] = {
+      item: new WidgetDescriptor(QuoteComponent, {
+        useCustomQuote: true,
+        customQuote: "Never let your dreams be dreams.",
+        customAuthor: "Sun Tzu",
+      }),
+      width: 1,
+      height: 1,
+    };
     this.state = {
       widgets: [
         new WidgetDescriptor(DateTimeComponent, {}),

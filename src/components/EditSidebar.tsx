@@ -3,7 +3,7 @@ import React from "react";
 
 type EditSidebarProps = {
     mode: 'opened' | 'closed';
-    children: React.ReactNode;
+    children: React.ReactNode | React.ReactNode[];
 };
 
 type EditSidebarState = {

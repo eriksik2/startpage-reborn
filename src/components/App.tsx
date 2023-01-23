@@ -1,21 +1,22 @@
 import React from "react";
-import { StartpartDescriptor } from "startparts/StartpartDescriptor";
+import { WidgetDescriptor } from "startparts/WidgetDescriptor";
 import { DateTimeComponent } from "./DateTimeComponent";
+import { DropDownSection } from "./DropDownSection";
 import { EditSidebar } from "./EditSidebar";
+import { Widget } from "./Widget";
 
 
 type PositionedStartpart<P extends React.ComponentType<any>> = {
-  startpart: StartpartDescriptor<P>;
-  row: number;
-  col: number;
-  rowSpan: number;
-  colSpan: number;
+  item: WidgetDescriptor<P>;
+  width: number;
+  height: number;
 }
 
 type AppState = {
-  startparts: PositionedStartpart<any>[];
+  widgets: WidgetDescriptor<any>[];
+  grid: (PositionedStartpart<any> | null)[][];
   mode: "edit" | "view";
-  selected: number | null;
+  selected: { col: number, row: number} | null;
   sidebarWidth: number;
 };
 
@@ -24,14 +25,17 @@ export class App extends React.Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      startparts: [
-        {
-          startpart: new StartpartDescriptor(DateTimeComponent, {}),
-          row: 1,
-          col: 1,
-          rowSpan: 1,
-          colSpan: 1,
-        }
+      widgets: [
+        new WidgetDescriptor(DateTimeComponent, {}),
+      ],
+      grid: [
+        [
+          {
+            item: new WidgetDescriptor(DateTimeComponent, {}),
+            width: 1,
+            height: 1,
+          }
+        ],
       ],
       mode: "view",
       selected: null,
@@ -40,41 +44,65 @@ export class App extends React.Component<{}, AppState> {
 
     this.handleSwapMode = this.handleSwapMode.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
+    this.handleDrop = this.handleDrop.bind(this);
   }
 
   handleSwapMode() {
     this.setState({ mode: this.state.mode == 'edit' ? 'view' : 'edit' });
   }
 
-  handleSelect(index: number) {
-    if(this.state.selected == index) {
+  handleSelect(col: number, row: number) {
+    if(this.state.selected?.col == col && this.state.selected?.row == row) {
       this.setState({ selected: null });
     } else {
-      this.setState({ selected: index });
+      this.setState({ selected: { col, row } });
     }
   }
 
-  renderPart(index: number) {
-    const startpart = this.state.startparts[index];
-    const { row, col, rowSpan, colSpan } = startpart;
-    let className = `col-span-${colSpan} col-start-${col} row-span-${rowSpan} row-start-${row} bg-slate-200 rounded`;
-    if(this.state.selected == index) {
+  handleDrop(event: React.DragEvent<HTMLDivElement>, col: number, row: number) {
+    const data = WidgetDescriptor.fromJson(event.dataTransfer.getData("text/plain"));;
+    const grid = this.state.grid;
+    grid[col][row] = {
+      item: data,
+      width: 1,
+      height: 1,
+    };
+    this.setState({ grid });
+  }
+
+  renderPart(col: number, row: number) {
+    const startpart = this.state.grid[col][row];
+    if(startpart == null) {
+      return this.renderEmptyPart(col, row);
+    }
+    const { item, width, height } = startpart;
+    let className = `col-span-${width} col-start-${col} row-span-${height} row-start-${row} bg-slate-200 rounded`;
+    if(this.state.selected?.col == col && this.state.selected?.row == row) {
       className += " border-2 border-slate-300";
     }
     return <div
-      onClick={() => this.handleSelect(index)}
+      onClick={() => this.handleSelect(col, row)}
       className={className}
-      key={index}
+      key={`${col}-${row}`}
     >
-        {startpart.startpart.buildStartpart()}
+        {item.buildStartpart()}
     </div>
   }
 
-  renderEmptyPart() {
+  getSelected() {
+    if(this.state.selected == null) return null;
+    return this.state.grid[this.state.selected.col][this.state.selected.row];
+  }
+
+  renderEmptyPart(col: number, row: number) {
+    console.log(this.state.mode);
     return <div>
       {/** Empty part */}
       {this.state.mode == 'edit'
-        ? <div>+</div>
+        ? <div
+            className="w-full h-full bg-slate-200 rounded border-2 border-slate-200"
+            onDrop={(e) => this.handleDrop(e, col, row)}
+        >+</div>
         : null
       }
     </div>
@@ -100,14 +128,20 @@ export class App extends React.Component<{}, AppState> {
               : ""
             }
           `}>
-            {this.state.startparts.map((startpart, index) => this.renderPart(index))}
-            
+            {this.state.grid.map((column, coli) => column.map((item, rowi) => this.renderPart(coli, rowi)))}
           </div>
           <EditSidebar
             mode={this.state.mode == 'edit' ? 'opened' : 'closed'}
           >
             {/** Sidebar content */}
-            Selected: {this.state.selected}
+            <p>Selected: {this.getSelected()?.item.componentType.name}</p>
+            <DropDownSection title="Widgets">
+              {this.state.widgets.map((widget, index) => (
+                <div key={index}>
+                  <Widget data={widget}/>
+                </div>
+              ))}
+            </DropDownSection>
           </EditSidebar>
         </div>
       </div>

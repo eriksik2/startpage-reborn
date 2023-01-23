@@ -2,8 +2,43 @@ import React from "react";
 
 const knownComponents: { [key: string]: EditableWidgetType<any> } = {};
 
+type EditablePropStringType = {
+    type: 'string',
+    validator?: (value: string) => boolean,
+}
+export const editableString = (validator?: (value: string) => boolean, displayName?: string, propName?: string): EditablePropType => ({
+    type: 'string',
+    validator: validator,
+    displayName: displayName,
+    propName: propName,
+})
+
+
+type EditablePropSelectionType = {
+    type: 'selection',
+    options: string[],
+}
+export const editableSelection = (options: string[], displayName?: string, propName?: string): EditablePropType => ({
+    type: 'selection',
+    options: options,
+    displayName: displayName,
+    propName: propName,
+})
+
+type EditablePropBooleanType = {
+    type: 'boolean',
+}
+export const editableBoolean = (displayName?: string, propName?: string): EditablePropType => ({
+    type: 'boolean',
+})
+
+type EditablePropType = (EditablePropBooleanType | EditablePropSelectionType | EditablePropStringType) & {
+    displayName?: string,
+    propName?: string,
+};
+
 export type EditablePropTypes<T = {}> = {
-    [key in keyof Partial<T>]: 'bool';
+    [key in keyof Partial<T>]: EditablePropType;
 };
 export type EditableWidgetType<T = {}> = React.ComponentType<T> & {
     editablePropTypes: EditablePropTypes<T>;
@@ -39,7 +74,7 @@ export class WidgetDescriptor<T extends EditableWidgetType<any>> {
         return new WidgetDescriptor(componentType, props);
     }
 
-    buildStartpart(): React.ReactElement<React.ComponentProps<T>> {
+    buildWidget(): React.ReactElement<React.ComponentProps<T>> {
         return <this.componentType {...this.props}/>;
     }
 }

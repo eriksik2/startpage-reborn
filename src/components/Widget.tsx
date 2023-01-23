@@ -1,5 +1,5 @@
 import React from "react";
-import { WidgetDescriptor } from "startparts/WidgetDescriptor";
+import { WidgetDescriptor } from "widgets/WidgetDescriptor";
 
 type WidgetProps = {
     data: WidgetDescriptor<any>,
@@ -25,7 +25,7 @@ export class Widget extends React.Component<WidgetProps, WidgetState> {
 
     render() {
         return <div draggable onDragStart={this.handleDragStart}>
-            {this.props.data.buildStartpart()}
+            {this.props.data.buildWidget()}
         </div>
     }
 }

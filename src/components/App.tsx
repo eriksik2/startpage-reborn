@@ -1,8 +1,9 @@
 import React from "react";
-import { EditableWidgetType, WidgetDescriptor } from "startparts/WidgetDescriptor";
+import { EditableWidgetType, WidgetDescriptor } from "widgets/WidgetDescriptor";
 import { DateTimeComponent } from "./DateTimeComponent";
 import { DropDownSection } from "./DropDownSection";
 import { EditSidebar } from "./EditSidebar";
+import { QuoteComponent } from "./QuoteComponent";
 import { Widget } from "./Widget";
 import { WidgetSettingsEdit } from "./WidgetSettingsEdit";
 
@@ -33,6 +34,7 @@ export class App extends React.Component<{}, AppState> {
     this.state = {
       widgets: [
         new WidgetDescriptor(DateTimeComponent, {}),
+        new WidgetDescriptor(QuoteComponent, {}),
       ],
       grid: grid,
       mode: "view",
@@ -47,10 +49,13 @@ export class App extends React.Component<{}, AppState> {
   }
 
   handleSwapMode() {
-    this.setState({ mode: this.state.mode == 'edit' ? 'view' : 'edit' });
+    this.setState({
+      mode: this.state.mode == 'edit' ? 'view' : 'edit'
+    });
   }
 
   handleSelect(col: number, row: number) {
+    if(this.state.mode == 'view') return;
     if(this.state.selected?.col == col && this.state.selected?.row == row) {
       this.setState({ selected: null });
     } else {
@@ -88,7 +93,7 @@ export class App extends React.Component<{}, AppState> {
     }
     const { item, width, height } = startpart;
     let className = `col-span-${width} col-start-${col} row-span-${height} row-start-${row} bg-slate-200 rounded`;
-    if(this.state.selected?.col == col && this.state.selected?.row == row) {
+    if(this.state.mode == 'edit' && this.state.selected?.col == col && this.state.selected?.row == row) {
       className += " border-2 border-slate-300";
     }
     return <div
@@ -99,7 +104,7 @@ export class App extends React.Component<{}, AppState> {
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={(e) => e.preventDefault()}
     >
-        {item.buildStartpart()}
+        {item.buildWidget()}
     </div>
   }
 

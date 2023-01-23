@@ -21,10 +21,20 @@ export class QuoteComponent extends React.Component<QuoteComponentProps, QuoteCo
     }
 
     static editablePropTypes = {
-        useCustomQuote: editableBoolean(),
-        customQuote: editableString(),
-        customAuthor: editableString(),
-        showAuthor: editableBoolean(),
+        useCustomQuote: editableBoolean({
+            displayName: "Use custom quote",
+        }),
+        customQuote: editableString(undefined, {
+            displayName: "Custom quote",
+            showInSettings: (props: QuoteComponentProps) => props.useCustomQuote,
+        }),
+        customAuthor: editableString(undefined, {
+            displayName: "Custom author",
+            showInSettings: (props: QuoteComponentProps) => props.useCustomQuote && props.showAuthor,
+        }),
+        showAuthor: editableBoolean({
+            displayName: "Show author",
+        }),
     }
 
     constructor(props: QuoteComponentProps) {

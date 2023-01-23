@@ -23,10 +23,18 @@ export class DateTimeComponent extends React.Component<PropsType, StateType> {
   };
 
   static editablePropTypes = {
-    showTime: editableBoolean(),
-    showDayOfWeek: editableBoolean(),
-    showDate: editableBoolean(),
-    showYear: editableBoolean(),
+    showTime: editableBoolean({
+      displayName: "Show time",
+    }),
+    showDayOfWeek: editableBoolean({
+      displayName: "Show day of week",
+    }),
+    showDate: editableBoolean({
+      displayName: "Show date",
+    }),
+    showYear: editableBoolean({
+      displayName: "Show year",
+    }),
   };
 
   constructor(props: PropsType) {

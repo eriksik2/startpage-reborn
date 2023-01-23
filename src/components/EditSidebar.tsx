@@ -27,20 +27,21 @@ export class EditSidebar extends React.Component<EditSidebarProps, EditSidebarSt
         return <div
             className={`
                 h-full
-                bg-slate-200 rounded
+                bg-slate-200
+                p-2
+                border-l-2 border-slate-300
                 flex flex-row items-stretch
+                overflow-y-scroll overflow-x-hidden
                 ${this.props.mode == 'opened'
-                ? `w-1/4`
+                ? ""
                 : "hidden"
                 }`}
         >
-            <div
-                className="h-full w-2 bg-slate-300 cursor-col-resize"
-            >
-                {/** Dragger */}
-            </div>
             <div>
                 {/** Content */}
+                <h1 className="text-4xl mb-4">
+                    Settings
+                </h1>
                 {this.props.children}
             </div>
         </div>

@@ -3,6 +3,7 @@ import { EditableWidgetType, WidgetDescriptor } from "widgets/WidgetDescriptor";
 import { DateTimeComponent } from "./DateTimeComponent";
 import { DropDownSection } from "./DropDownSection";
 import { EditSidebar } from "./EditSidebar";
+import { LinksComponent } from "./LinksComponent";
 import { QuoteComponent } from "./QuoteComponent";
 import { WidgetPreview } from "./Widget";
 import { WidgetSettingsEdit } from "./WidgetSettingsEdit";
@@ -26,6 +27,16 @@ export class App extends React.Component<{}, AppState> {
   constructor(props: {}) {
     super(props);
     const grid = Array(3).fill(null).map(() => Array(5).fill(null));
+    grid[0][2] = {
+      item: new WidgetDescriptor(LinksComponent, {
+        links: [
+          { name: "Google", url: "https://google.com" },
+          { name: "Reddit", url: "https://reddit.com" },
+        ],
+      }),
+      width: 1,
+      height: 1,
+    };
     grid[1][0] = {
       item: new WidgetDescriptor(DateTimeComponent, {
         showTime: false,
@@ -65,6 +76,12 @@ export class App extends React.Component<{}, AppState> {
       widgets: [
         new WidgetDescriptor(DateTimeComponent, {}),
         new WidgetDescriptor(QuoteComponent, {}),
+        new WidgetDescriptor(LinksComponent, {
+          links: [
+            { name: "Google", url: "https://google.com" },
+            { name: "Reddit", url: "https://reddit.com" },
+          ],
+        }),
       ],
       grid: grid,
       mode: "view",
@@ -91,6 +108,9 @@ export class App extends React.Component<{}, AppState> {
     if(this.state.selected?.col == col && this.state.selected?.row == row) {
       this.setState({ selected: null });
     } else {
+      if(this.state.grid[col][row] == null) {
+        this.setState({ selected: null });
+      }
       this.setState({ selected: { col, row } });
     }
   }
@@ -168,6 +188,7 @@ export class App extends React.Component<{}, AppState> {
         ? <div
             className="w-full h-full flex items-center justify-center border-2 border-slate-200"
             key={`${col}-${row}`}
+            onClick={() => this.handleSelect(col, row)}
             onDrop={(e) => this.handleDrop(e, col, row)}
             onDragOver={(e) => e.preventDefault()}
             onDragEnter={(e) => e.preventDefault()}
@@ -184,26 +205,34 @@ export class App extends React.Component<{}, AppState> {
 
   render() {
     return (
-      <div className="h-full">
-        <div>
-          {/** Header */}
-          <button onClick={this.handleSwapMode}>
-            {this.state.mode == 'edit'
-              ? "View"
-              : "Edit"}
-          </button>
-        </div>
-        <div className="flex flex-row items-center h-full">
-          {/** Main content and sidebar */}
-          <div className={`
-            grid grid-cols-5 grid-rows-3 w-full aspect-[16/8]
-            ${this.state.mode == 'edit'
-              ? "rounded border-2 border-slate-200"
-              : ""
-            }
-          `}>
-            {this.state.grid.map((column, coli) => column.map((item, rowi) => this.renderPart(coli, rowi)))}
+      <div className="flex flex-row items-center h-full">
+        
+        <div className="flex flex-col align-stretch justify-start h-full w-full shrink">
+          {/** Main content and header */}
+          <div className="w-full flex flex-row justify-end">
+            {/** Header */}
+            <button
+              className="px-4 py-2 rounded-bl-xl border-l-2 border-b-2 border-slate-300 bg-slate-200 text-slate-800"  
+              onClick={this.handleSwapMode}
+            >
+              {this.state.mode == 'edit'
+                ? "Close"
+                : "Edit"}
+            </button>
           </div>
+          <div className="flex flex-col justify-center align-stretch h-full">
+            <div className={`
+              grid grid-cols-5 grid-rows-3 w-full aspect-[16/8]
+              ${this.state.mode == 'edit'
+                ? "rounded border-2 border-slate-200"
+                : ""
+              }
+            `}>
+              {this.state.grid.map((column, coli) => column.map((item, rowi) => this.renderPart(coli, rowi)))}
+            </div>
+          </div>
+        </div>
+        <div className="grow h-full">
           <EditSidebar
             mode={this.state.mode == 'edit' ? 'opened' : 'closed'}
           >

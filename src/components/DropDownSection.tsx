@@ -28,14 +28,19 @@ export class DropDownSection extends React.Component<DropDownSectionProps, DropD
     }
 
     render() {
-        return <div>
+        return <div className="mt-2">
             <div className="flex flex-row items-center" onClick={this.handleToggle}>
                 {this.state.isOpen ? "▼" : "▶"}
                 <h1>
                     {this.props.title}
                 </h1>
             </div>
-            <div className={this.state.isOpen ? "" : "hidden"}>
+            <div
+                className={`
+                    w-full pl-2
+                    ${this.state.isOpen ? "" : "hidden"}
+                `}
+            >
                 {this.props.children}
             </div>
         </div>

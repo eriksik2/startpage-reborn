@@ -2,15 +2,55 @@ import React from "react";
 
 const knownComponents: { [key: string]: EditableWidgetType<any> } = {};
 
+export function instantiateEditableProp(prop: EditablePropType) {
+    switch (prop.type) {
+        case 'boolean':
+            return false;
+        case 'string':
+            return "";
+        case 'list':
+            return [];
+        case 'selection':
+            return prop.options[0];
+        case 'object':
+            let obj: any = {};
+            for (let key in prop.props) {
+                obj[key] = instantiateEditableProp(prop.props[key]);
+            }
+            return obj;
+    }
+}
+
+type EditablePropObjectType<T = any> = {
+    type: 'object',
+    props: EditablePropTypes<T>,
+}
+export function editableObject<T>(props: EditablePropTypes<T>, args?: EditablePropBase): EditablePropType {
+    return {
+        type: 'object',
+        props: props,
+        ...args,
+    }
+}
+
+type EditablePropListType = {
+    type: 'list',
+    itemType: EditablePropType,
+}
+export const editableList = (itemType: EditablePropType, args?: EditablePropBase): EditablePropType => ({
+    type: 'list',
+    itemType: itemType,
+    ...args,
+})
+
 type EditablePropStringType = {
     type: 'string',
     validator?: (value: string) => boolean,
 }
-export const editableString = (validator?: (value: string) => boolean, displayName?: string, propName?: string): EditablePropType => ({
+export const editableString = (validator?: (value: string) => boolean, args?: EditablePropBase): EditablePropType => ({
     type: 'string',
     validator: validator,
-    displayName: displayName,
-    propName: propName,
+    ...args,
 })
 
 
@@ -18,24 +58,33 @@ type EditablePropSelectionType = {
     type: 'selection',
     options: string[],
 }
-export const editableSelection = (options: string[], displayName?: string, propName?: string): EditablePropType => ({
+export const editableSelection = (options: string[], args?: EditablePropBase): EditablePropType => ({
     type: 'selection',
     options: options,
-    displayName: displayName,
-    propName: propName,
+    ...args,
 })
 
 type EditablePropBooleanType = {
     type: 'boolean',
 }
-export const editableBoolean = (displayName?: string, propName?: string): EditablePropType => ({
+export const editableBoolean = (args?: EditablePropBase): EditablePropType => ({
     type: 'boolean',
+    ...args,
 })
 
-type EditablePropType = (EditablePropBooleanType | EditablePropSelectionType | EditablePropStringType) & {
+type EditablePropBase<T = any> = {
     displayName?: string,
-    propName?: string,
-};
+    showInSettings?: boolean | ((props: T) => boolean),
+}
+
+export type EditablePropType<T = any> =
+    ( EditablePropBooleanType
+    | EditablePropSelectionType
+    | EditablePropStringType
+    | EditablePropListType
+    | EditablePropObjectType
+    )
+    & EditablePropBase<T>;
 
 export type EditablePropTypes<T = {}> = {
     [key in keyof Partial<T>]: EditablePropType;

@@ -5,6 +5,7 @@ import { DropDownSection } from "./DropDownSection";
 import { EditSidebar } from "./EditSidebar";
 import { LinksComponent } from "./LinksComponent";
 import { QuoteComponent } from "./QuoteComponent";
+import { WeatherComponent } from "./WeatherComponent";
 import { WidgetPreview } from "./Widget";
 import { WidgetSettingsEdit } from "./WidgetSettingsEdit";
 
@@ -82,6 +83,7 @@ export class App extends React.Component<{}, AppState> {
             { name: "Reddit", url: "https://reddit.com" },
           ],
         }),
+        new WidgetDescriptor(WeatherComponent, {}),
       ],
       grid: grid,
       mode: "view",
@@ -157,14 +159,13 @@ export class App extends React.Component<{}, AppState> {
   handleDragStart(event: React.DragEvent<HTMLDivElement>, col: number, row: number) {
     if(this.state.mode == 'view') return;
     if(this.state.grid[col][row] == null) return;
+
     const text = this.state.grid[col][row]!.item.toJson();
     event.dataTransfer.setData("text/plain", text);
   }
 
   handleDragEnd(event: React.DragEvent<HTMLDivElement>, col: number, row: number) {
     if(this.state.mode == 'view') return;
-    if(event.dataTransfer.dropEffect == 'none') return;
-
     const grid = this.state.grid;
     grid[col][row] = null;
     this.setState({
@@ -174,14 +175,18 @@ export class App extends React.Component<{}, AppState> {
 
   handleDrop(event: React.DragEvent<HTMLDivElement>, col: number, row: number) {
     if(this.state.mode == 'view') return;
-    const data = WidgetDescriptor.fromJson(event.dataTransfer.getData("text/plain"));;
-    const grid = this.state.grid;
-    grid[col][row] = {
-      item: data,
-      width: 1,
-      height: 1,
-    };
-    this.setState({ grid });
+    const dataPlain = event.dataTransfer.getData("text/plain");
+    if(dataPlain != "") {
+      event.dataTransfer.dropEffect = 'move';
+      const data = WidgetDescriptor.fromJson(dataPlain);
+      const grid = this.state.grid;
+      grid[col][row] = {
+        item: data,
+        width: 1,
+        height: 1,
+      };
+      this.setState({ grid });
+    }
   }
 
   handleChangeSelected(data: WidgetDescriptor<any>) {
@@ -195,13 +200,64 @@ export class App extends React.Component<{}, AppState> {
     this.setState({ grid });
   }
 
+  handleClear() {
+    if(this.state.selected == null) {
+      const grid = this.state.grid;
+      for(let col = 0; col < grid.length; col++) {
+        for(let row = 0; row < grid[col].length; row++) {
+          grid[col][row] = null;
+        }
+      }
+      this.setState({
+        grid,
+      });
+    } else {
+      const grid = this.state.grid;
+      grid[this.state.selected.col][this.state.selected.row] = null;
+      this.setState({
+        grid,
+        selected: null,
+      });
+    }
+  }
+
+  getWidgetPositioningClassName(col: number, row: number) {
+    const widget = this.state.grid[col][row];
+    if(widget == null) {
+      return "";
+    }
+    const { item, width, height } = widget;
+    let heightClass = "";
+    switch(height) {
+      case 1: heightClass = "row-span-1"; break;
+      case 2: heightClass = "row-span-2"; break;
+      case 3: heightClass = "row-span-3"; break;
+      case 4: heightClass = "row-span-4"; break;
+      case 5: heightClass = "row-span-5"; break;
+      case 6: heightClass = "row-span-6"; break;
+    }
+    let widthClass = "";
+    switch(width) {
+      case 1: widthClass = "col-span-1"; break;
+      case 2: widthClass = "col-span-2"; break;
+      case 3: widthClass = "col-span-3"; break;
+      case 4: widthClass = "col-span-4"; break;
+      case 5: widthClass = "col-span-5"; break;
+      case 6: widthClass = "col-span-6"; break;
+      case 7: widthClass = "col-span-7"; break;
+      case 8: widthClass = "col-span-8"; break;
+      case 9: widthClass = "col-span-9"; break;
+      case 10: widthClass = "col-span-10"; break;
+    }
+    return `${widthClass} ${heightClass}`;
+  }
+
   renderPart(col: number, row: number) {
-    const startpart = this.state.grid[col][row];
-    if(startpart == null) {
+    const widget = this.state.grid[col][row];
+    if(widget == null) {
       return this.renderEmptyPart(col, row);
     }
-    const { item, width, height } = startpart;
-    let className = `col-span-${width} col-start-${col} row-span-${height} row-start-${row}`;
+    let className = `${this.getWidgetPositioningClassName(col, row)} col-start-${col} row-start-${row}`;
     if(this.state.mode == 'edit' && this.state.selected?.col == col && this.state.selected?.row == row) {
       className += " border-2 border-slate-300";
     }
@@ -216,7 +272,7 @@ export class App extends React.Component<{}, AppState> {
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={(e) => e.preventDefault()}
     >
-        {item.buildWidget()}
+        {widget.item.buildWidget()}
     </div>
   }
 
@@ -243,6 +299,7 @@ export class App extends React.Component<{}, AppState> {
   }
 
   render() {
+
     return (
       <div className="flex flex-row items-stretch h-full">
         
@@ -250,6 +307,11 @@ export class App extends React.Component<{}, AppState> {
           {/** Main content and header */}
           <div className="w-full flex flex-row justify-end">
             {/** Header */}
+            <button
+              onClick={() => this.handleClear()}
+            >
+              Clear
+            </button>
             <button
               className="px-4 py-2 rounded-bl-xl border-l-2 border-b-2 border-slate-300 bg-slate-200 text-slate-800"  
               onClick={this.handleSwapMode}

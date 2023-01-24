@@ -42,7 +42,7 @@ export class EditSidebar extends React.Component<EditSidebarProps, EditSidebarSt
                 <h1 className="text-4xl mb-4">
                     Settings
                 </h1>
-                {this.props.children}
+                    {this.props.children}
             </div>
         </div>
     }

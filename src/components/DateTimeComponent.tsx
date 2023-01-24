@@ -52,7 +52,7 @@ export class DateTimeComponent extends React.Component<PropsType, StateType> {
 
   render() {
     const showAnyDate = this.props.showDayOfWeek || this.props.showDate || this.props.showYear;
-    let dateParts = [];
+    let dateParts: string[] = [];
     if (this.props.showDayOfWeek) {
         dateParts.push(dateFormat(this.state.date, "dddd"));
     }

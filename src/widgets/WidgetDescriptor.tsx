@@ -73,6 +73,7 @@ export const editableBoolean = (args?: EditablePropBase): EditablePropType => ({
 })
 
 type EditablePropBase<T = any> = {
+    category?: string,
     displayName?: string,
     showInSettings?: boolean | ((props: T) => boolean),
 }

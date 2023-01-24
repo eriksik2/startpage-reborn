@@ -1,4 +1,5 @@
 import React from "react";
+import { groupBy } from "utils/groupby";
 import { EditablePropType, EditablePropTypes, instantiateEditableProp, WidgetDescriptor } from "widgets/WidgetDescriptor";
 
 
@@ -23,17 +24,36 @@ export class WidgetSettingsEdit extends React.Component<WidgetSettingsEditProps,
         this.props.onChange(this.props.data);
     }
 
+    getCategoryGroupedProps() {
+        return groupBy(
+            Object.entries(this.props.data.componentType.editablePropTypes),
+            ([prop, propType]) => propType.category || "",     
+        );
+    }
+
     render() {
         return <div>
-            {Object.entries(this.props.data.componentType.editablePropTypes).map((entry) => {
-                const [prop, propType] = entry;
-                return <GenericPropEditor
-                    key={prop}
-                    data={this.props.data}
-                    prop={propType}
-                    onChange={this.handleChange}
-                    loc={[{type: "deref", prop: prop}]}
-                />
+            {Array.from(this.getCategoryGroupedProps()).map((entry) => {
+                const [category, entries] = entry;
+                return <div key={category}>
+                    {category.length > 0
+                        ? <h3 className="text-lg">{category}</h3>
+                        : null
+                    }
+                    <div className="ml-2">
+                        {entries.map((data) => {
+                            const [prop, propType] = data;
+                            return <GenericPropEditor
+                                key={prop}
+                                data={this.props.data}
+                                prop={propType}
+                                onChange={this.handleChange}
+                                loc={[{type: "deref", prop: prop}]}
+                            />
+                        })}
+                    </div>
+                </div>
+                
             })}
         </div>
     }
@@ -261,6 +281,7 @@ class DropdownPropEditor extends React.Component<DropdownPropEditorProps> {
         return <div className="flex flex-row flex-nowrap justify-between grow">
             <label htmlFor={"propeditor"+this.props.name}>{this.props.name}</label>
             <select
+                className="mb-1 pl-1"
                 id={"propeditor"+this.props.name}
                 value={this.props.value}
                 onChange={(event) => this.props.onChange(event.target.value)}

@@ -65,9 +65,7 @@ export class App extends React.Component<{}, AppState> {
     };
     grid[2][2] = {
       item: new WidgetDescriptor(QuoteComponent, {
-        useCustomQuote: true,
-        customQuote: "Never let your dreams be dreams.",
-        customAuthor: "Sun Tzu",
+        useCustomQuote: false,
       }),
       width: 1,
       height: 1,

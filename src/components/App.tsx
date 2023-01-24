@@ -64,16 +64,18 @@ export class App extends React.Component<{}, AppState> {
       height: 1,
     };
     grid[2][2] = {
-      item: new WidgetDescriptor(QuoteComponent, {
-        useCustomQuote: false,
-      }),
+      item: new WidgetDescriptor(QuoteComponent, {}),
       width: 1,
       height: 1,
     };
     this.state = {
       widgets: [
         new WidgetDescriptor(DateTimeComponent, {}),
-        new WidgetDescriptor(QuoteComponent, {}),
+        new WidgetDescriptor(QuoteComponent, {
+          useCustomQuote: true,
+          customQuote: "Never let your dreams be dreams.",
+          customAuthor: "Sun Tzu",
+        }),
         new WidgetDescriptor(LinksComponent, {
           links: [
             { name: "Google", url: "https://google.com" },
@@ -242,7 +244,7 @@ export class App extends React.Component<{}, AppState> {
 
   render() {
     return (
-      <div className="flex flex-row items-center h-full">
+      <div className="flex flex-row items-stretch h-full">
         
         <div className="flex flex-col align-stretch justify-start h-full w-full shrink">
           {/** Main content and header */}

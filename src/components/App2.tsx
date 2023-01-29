@@ -21,6 +21,7 @@ import { SliderControl } from 'SettingsModel/Controls/SliderControl';
 import { NumberControl } from 'SettingsModel/Controls/NumberControl';
 import { ObjectControl } from 'SettingsModel/Controls/ObjectControl';
 import { ListControl } from 'SettingsModel/Controls/ListControl';
+import { YoutubeComponent } from './YoutubeComponent';
 
 type App2Props = {
 };
@@ -32,6 +33,8 @@ type App2State = {
     widgets: WidgetDescriptor<any>[];
     selected: WidgetDescriptor<any> | null;
 };
+
+export const ModeContext = React.createContext<"display" | "edit">("display");
 
 export class App2 extends React.Component<App2Props, App2State> {
   constructor(props: App2Props) {
@@ -57,6 +60,7 @@ export class App2 extends React.Component<App2Props, App2State> {
             ],
           }),
           new WidgetDescriptor(WeatherComponent, {}),
+          new WidgetDescriptor(YoutubeComponent, {}),
         ],
     };
 
@@ -122,50 +126,52 @@ export class App2 extends React.Component<App2Props, App2State> {
 
   render() {
     return (
-      <div className="h-full w-full z-10">
-        <ResizableColumns className="h-full w-full">
-          <div className="w-full h-full flex flex-col items-stretch justify-center">
-            <ViewportAspectRatio>
-              {this.state.mode === "display"
-                  ? <BoardDisplay boardModel={this.getActiveBoard()} />
-                  : <GridBoardEditor
-                    boardModel={this.getActiveBoard() as GridBoardModel}
-                    onSelect={this.onSelect}
-                  />
-              }
-            </ViewportAspectRatio>
-          </div>
-          {this.state.mode === "edit" &&
-            <EditSidebar mode='opened'>
-              <DropDownSection title="Board settings">
-              </DropDownSection>
-              <DropDownSection title="Widget settings">
-                {this.state.selected != null
-                  ? <WidgetSettingsEdit
-                    data={this.state.selected}
-                    onChange={this.onSelectedWidgetChange}/>
-                  : <div>Nothing selected</div>
+      <ModeContext.Provider value={this.state.mode}>
+        <div className="h-full w-full z-10">
+          <ResizableColumns className="h-full w-full">
+            <div className="w-full h-full flex flex-col items-stretch justify-center">
+              <ViewportAspectRatio>
+                {this.state.mode === "display"
+                    ? <BoardDisplay boardModel={this.getActiveBoard()} />
+                    : <GridBoardEditor
+                      boardModel={this.getActiveBoard() as GridBoardModel}
+                      onSelect={this.onSelect}
+                    />
                 }
-              </DropDownSection>
-              <DropDownSection title="Widgets">
-                <div
-                  className="flex flex-wrap"
-                >
-                  {this.state.widgets.map((widget, index) => (
-                    <div key={index}>
-                      <WidgetPreview data={widget}/>
-                    </div>
-                  ))}
-                </div>
-              </DropDownSection>
-            </EditSidebar>
-          }
-        </ResizableColumns>
-        <div className="absolute top-0 left-0">
-          <button onClick={() => this.setState({ mode: "display" })}>Display</button>
-          <button onClick={() => this.setState({ mode: "edit" })}>Edit</button>
+              </ViewportAspectRatio>
+            </div>
+            {this.state.mode === "edit" &&
+              <EditSidebar mode='opened'>
+                <DropDownSection title="Board settings">
+                </DropDownSection>
+                <DropDownSection title="Widget settings">
+                  {this.state.selected != null
+                    ? <WidgetSettingsEdit
+                      data={this.state.selected}
+                      onChange={this.onSelectedWidgetChange}/>
+                    : <div>Nothing selected</div>
+                  }
+                </DropDownSection>
+                <DropDownSection title="Widgets">
+                  <div
+                    className="flex flex-wrap"
+                  >
+                    {this.state.widgets.map((widget, index) => (
+                      <div key={index}>
+                        <WidgetPreview data={widget}/>
+                      </div>
+                    ))}
+                  </div>
+                </DropDownSection>
+              </EditSidebar>
+            }
+          </ResizableColumns>
+          <div className="absolute top-0 left-0">
+            <button onClick={() => this.setState({ mode: "display" })}>Display</button>
+            <button onClick={() => this.setState({ mode: "edit" })}>Edit</button>
+          </div>
         </div>
-      </div>
+      </ModeContext.Provider>
     );
   }
 }

@@ -13,7 +13,7 @@ type EditSidebarState = {
 export class EditSidebar extends React.Component<EditSidebarProps, EditSidebarState> {
     static defaultProps = {
         mode: 'closed',
-        children: [],
+        children: null,
     };
 
     constructor(props: EditSidebarProps) {

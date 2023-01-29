@@ -19,7 +19,7 @@ export class WidgetPreview extends React.Component<WidgetProps, WidgetState> {
 
     handleDragStart(event: React.DragEvent<HTMLDivElement>) {
         const text = this.props.data.toJson();
-        event.dataTransfer.setData("text/plain", text);
+        event.dataTransfer.setData("json/startpage-widget", text);
     }
 
     render() {

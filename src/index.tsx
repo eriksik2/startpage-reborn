@@ -1,8 +1,8 @@
 import { createRoot } from 'react-dom/client'
 import 'tailwindcss/tailwind.css'
 import { App2 } from 'components/App2'
-import { PositionModelDisplay } from 'components/PositionModelDisplay'
-import { GridPositionModel } from 'DataModel/GridPositionModel'
+import { BoardDisplay } from 'components/BoardDisplay'
+import { GridBoardModel } from 'DataModel/GridBoardModel'
 import { WidgetDescriptor } from 'widgets/WidgetDescriptor'
 import { LinksComponent } from 'components/LinksComponent'
 

@@ -1,3 +1,4 @@
+import { BaseControl } from 'SettingsModel/BaseControl';
 import { Listenable } from 'utils/Listenable';
 import { WidgetDescriptor } from 'widgets/WidgetDescriptor';
 
@@ -14,7 +15,7 @@ export type FractionalPosition = {
 };
 
 
-export abstract class PositionModel<PositionType> extends Listenable {
+export abstract class BoardModel<PositionType> extends Listenable {
 
         widgets: {
             widget: WidgetDescriptor<any>;
@@ -25,7 +26,7 @@ export abstract class PositionModel<PositionType> extends Listenable {
             super();
             this.widgets = [];
         }
-        
+
         public abstract toFractionalPosition(position: PositionType): FractionalPosition;
         public abstract fromFractionalPosition(position: FractionalPosition): PositionType;
 

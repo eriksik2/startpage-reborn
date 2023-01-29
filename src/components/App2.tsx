@@ -1,11 +1,11 @@
 
-import { GridPositionModel } from 'DataModel/GridPositionModel';
-import { PositionModel } from 'DataModel/PositionModel';
+import { GridBoardModel } from 'DataModel/GridBoardModel';
+import { BoardModel } from 'DataModel/BoardModel';
 import React from "react";
 import { WidgetDescriptor } from 'widgets/WidgetDescriptor';
 import { LinksComponent } from './LinksComponent';
-import { PositionModelDisplay } from './PositionModelDisplay';
-import { GridPositionModelEdit } from './GridPositionModelEdit';
+import { BoardDisplay } from './BoardDisplay';
+import { GridBoardEditor } from './GridBoardEditor';
 import ViewportAspectRatio from './ViewportAspectRatio';
 import { EditSidebar } from './EditSidebar';
 import ResizableColumns from './ResizableColumns';
@@ -15,13 +15,20 @@ import { WidgetSettingsEdit } from './WidgetSettingsEdit';
 import { DateTimeComponent } from './DateTimeComponent';
 import { QuoteComponent } from './QuoteComponent';
 import { WeatherComponent } from './WeatherComponent';
+import { AppModel } from 'DataModel/AppModel';
+import { firstOpenAppModel } from 'utils/firstOpenAppModel';
+import { SliderControl } from 'SettingsModel/Controls/SliderControl';
+import { NumberControl } from 'SettingsModel/Controls/NumberControl';
+import { ObjectControl } from 'SettingsModel/Controls/ObjectControl';
+import { ListControl } from 'SettingsModel/Controls/ListControl';
 
 type App2Props = {
 };
 
 type App2State = {
     mode: "display" | "edit",
-    positionModel: PositionModel<any>,
+    appModel: AppModel,
+    activeBoardIndex: number,
     widgets: WidgetDescriptor<any>[];
     selected: WidgetDescriptor<any> | null;
 };
@@ -29,34 +36,12 @@ type App2State = {
 export class App2 extends React.Component<App2Props, App2State> {
   constructor(props: App2Props) {
     super(props);
-    const positionModel = new GridPositionModel(6, 10);
-    positionModel.addWidget(new WidgetDescriptor(LinksComponent, {
-      links: [
-        { name: "Google", url: "https://google.com" },
-        { name: "Reddit", url: "https://reddit.com" },
-      ],
-    }), { row: 0, col: 4, width: 2, height: 2 })
-    positionModel.addWidget(new WidgetDescriptor(DateTimeComponent, {
-      showTime: false,
-      showYear: false,
-      showDayOfWeek: false,
-    }), { row: 2, col: 0, width: 2, height: 2 });
-    positionModel.addWidget(new WidgetDescriptor(DateTimeComponent, {
-      showYear: false,
-      showDate: false,
-    }), { row: 2, col: 4, width: 2, height: 2 });
-    positionModel.addWidget(new WidgetDescriptor(DateTimeComponent, {
-      showTime: false,
-      showDayOfWeek: false,
-      showDate: false,
-    }), { row: 2, col: 8, width: 2, height: 2 });
-    positionModel.addWidget(new WidgetDescriptor(QuoteComponent, {}), {
-      row: 4, col: 4, width: 2, height: 2
-    });
     
+    const appModel = firstOpenAppModel();
     this.state = {
         mode: "display",
-        positionModel: positionModel,
+        appModel: appModel,
+        activeBoardIndex: 0,
         selected: null,
         widgets: [
           new WidgetDescriptor(DateTimeComponent, {}),
@@ -75,8 +60,50 @@ export class App2 extends React.Component<App2Props, App2State> {
         ],
     };
 
+    this.onModelUpdate = this.onModelUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.onSelectedWidgetChange = this.onSelectedWidgetChange.bind(this);
+  }
+
+  componentDidMount(): void {
+    this.state.appModel.addListener(this.onModelUpdate);
+    this.getActiveBoard().addListener(this.onModelUpdate);
+  }
+
+  componentWillUnmount(): void {
+    this.state.appModel.removeListener(this.onModelUpdate);
+    this.getActiveBoard().removeListener(this.onModelUpdate);
+  }
+
+  getActiveBoard() {
+    return this.state.appModel.boards[this.state.activeBoardIndex]!;
+  }
+
+  setActiveBoard(index: number) {
+    const activeBoard = this.getActiveBoard();
+    const newActiveBoard = this.state.appModel.boards[index]
+    if(newActiveBoard == null) return;
+    if(activeBoard == newActiveBoard) return;
+    activeBoard.removeListener(this.onModelUpdate);
+    newActiveBoard.addListener(this.onModelUpdate);
+    this.setState({
+      activeBoardIndex: index,
+    });
+  }
+
+  /*addNewBoard() {
+    const newBoard = new GridBoardModel(5, 5);
+    this.state.appModel.addBoard(newBoard);
+    this.setActiveBoard(newBoard);
+  }*/
+
+  removeBoard(board: BoardModel<any>) {
+
+    this.state.appModel.removeBoard(board);
+  }
+
+  onModelUpdate() {
+    this.forceUpdate();
   }
 
   onSelect(widget: WidgetDescriptor<any> | null) {
@@ -90,12 +117,7 @@ export class App2 extends React.Component<App2Props, App2State> {
 
   onSelectedWidgetChange(widget: WidgetDescriptor<any>) {
     if(this.state.selected == null) return;
-    const positionModel = this.state.positionModel;
-    positionModel.updateWidget(this.state.selected, widget);
-    this.setState({
-      positionModel: positionModel,
-      selected: widget,
-    });
+    this.getActiveBoard().updateWidget(this.state.selected, widget);
   }
 
   render() {
@@ -105,9 +127,9 @@ export class App2 extends React.Component<App2Props, App2State> {
           <div className="w-full h-full flex flex-col items-stretch justify-center">
             <ViewportAspectRatio>
               {this.state.mode === "display"
-                  ? <PositionModelDisplay positionModel={this.state.positionModel} />
-                  : <GridPositionModelEdit
-                    positionModel={this.state.positionModel as GridPositionModel}
+                  ? <BoardDisplay boardModel={this.getActiveBoard()} />
+                  : <GridBoardEditor
+                    boardModel={this.getActiveBoard() as GridBoardModel}
                     onSelect={this.onSelect}
                   />
               }
@@ -115,7 +137,9 @@ export class App2 extends React.Component<App2Props, App2State> {
           </div>
           {this.state.mode === "edit" &&
             <EditSidebar mode='opened'>
-              <DropDownSection title="Selected">
+              <DropDownSection title="Board settings">
+              </DropDownSection>
+              <DropDownSection title="Widget settings">
                 {this.state.selected != null
                   ? <WidgetSettingsEdit
                     data={this.state.selected}

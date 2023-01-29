@@ -1,28 +1,28 @@
-import { PositionModel } from 'DataModel/PositionModel';
+import { BoardModel } from 'DataModel/BoardModel';
 import React from "react";
 
 
 
-type PositionModelDisplayProps = {
-  positionModel: PositionModel<any>,
+type BoardDisplayProps = {
+  boardModel: BoardModel<any>,
 };
 
-type PositionModelDisplayState = {
+type BoardDisplayState = {
 };
 
-export class PositionModelDisplay extends React.Component<PositionModelDisplayProps, PositionModelDisplayState> {
+export class BoardDisplay extends React.Component<BoardDisplayProps, BoardDisplayState> {
   rootRef: React.RefObject<HTMLDivElement>;
 
-  constructor(props: PositionModelDisplayProps) {
+  constructor(props: BoardDisplayProps) {
     super(props);
     this.rootRef = React.createRef();
   }
 
   renderPart(index: number) {
-    const positionedWidget = this.props.positionModel.widgets[index];
+    const positionedWidget = this.props.boardModel.widgets[index];
     if(positionedWidget === undefined) return null;
     const widget = positionedWidget.widget;
-    const position = this.props.positionModel.toFractionalPosition(positionedWidget.position);
+    const position = this.props.boardModel.toFractionalPosition(positionedWidget.position);
     if(widget === undefined) return null;
     return <div
       key={index}
@@ -44,7 +44,7 @@ export class PositionModelDisplay extends React.Component<PositionModelDisplayPr
         className="h-full w-full relative"
         ref={this.rootRef}
       >
-        {this.props.positionModel.widgets.map((item, index) => this.renderPart(index))}
+        {this.props.boardModel.widgets.map((item, index) => this.renderPart(index))}
       </div>
     );
   }

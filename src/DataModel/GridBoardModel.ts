@@ -1,4 +1,6 @@
-import { FractionalPosition, PositionModel as PositionModel } from './PositionModel';
+import { NumberControl } from 'SettingsModel/Controls/NumberControl';
+import { ObjectControl } from 'SettingsModel/Controls/ObjectControl';
+import { FractionalPosition, BoardModel as BoardModel } from './BoardModel';
 
 
 
@@ -9,13 +11,18 @@ export type GridPosition = {
     height: number;
 };
 
-export class GridPositionModel extends PositionModel<GridPosition> {
+export class GridBoardModel extends BoardModel<GridPosition> {
 
     num_rows: number;
     num_cols: number;
 
     constructor(num_rows: number, num_cols: number) {
         super();
+        this.num_rows = num_rows;
+        this.num_cols = num_cols;
+    }
+
+    public setSize(num_rows: number, num_cols: number) {
         this.num_rows = num_rows;
         this.num_cols = num_cols;
     }

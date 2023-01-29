@@ -1,16 +1,16 @@
-import { GridPosition, GridPositionModel } from 'DataModel/GridPositionModel';
-import { FractionalPosition, PositionModel } from 'DataModel/PositionModel';
+import { GridPosition, GridBoardModel } from 'DataModel/GridBoardModel';
+import { FractionalPosition, BoardModel } from 'DataModel/BoardModel';
 import React from 'react';
 import { WidgetDescriptor } from 'widgets/WidgetDescriptor';
 import { FractionalPositioned } from './FractionalPositioned';
 
-type GridPositionModelEditProps = {
-    positionModel: GridPositionModel,
+type GridBoardEditorProps = {
+    boardModel: GridBoardModel,
     onMoveWidget: (widget: WidgetDescriptor<any>, position: GridPosition) => void,
     onSelect?: (widget: WidgetDescriptor<any>) => void,
 };
 
-type GridPositionModelEditState = {
+type GridBoardEditorState = {
     activeDragData: {
         index: number,
         dragPixelOffset: { x: number, y: number },
@@ -25,7 +25,7 @@ type GridPositionModelEditState = {
 };
 
 
-export class GridPositionModelEdit extends React.Component<GridPositionModelEditProps, GridPositionModelEditState> {
+export class GridBoardEditor extends React.Component<GridBoardEditorProps, GridBoardEditorState> {
     rootRef: React.RefObject<HTMLDivElement>;
 
     static defaultProps = {
@@ -33,7 +33,7 @@ export class GridPositionModelEdit extends React.Component<GridPositionModelEdit
         onSelect: (widget: WidgetDescriptor<any>) => {},
     };
 
-    constructor(props: GridPositionModelEditProps) {
+    constructor(props: GridBoardEditorProps) {
         super(props);
         this.state = {
             activeDragData: null,
@@ -50,18 +50,18 @@ export class GridPositionModelEdit extends React.Component<GridPositionModelEdit
     }
 
     componentDidMount(): void {
-        this.props.positionModel.addListener(this.onPositionModelUpdate);
+        this.props.boardModel.addListener(this.onPositionModelUpdate);
     }
 
-    componentDidUpdate(prevProps: Readonly<GridPositionModelEditProps>, prevState: Readonly<GridPositionModelEditState>, snapshot?: any): void {
-        if(prevProps.positionModel !== this.props.positionModel) {
-            prevProps.positionModel.removeListener(this.onPositionModelUpdate);
-            this.props.positionModel.addListener(this.onPositionModelUpdate);
+    componentDidUpdate(prevProps: Readonly<GridBoardEditorProps>, prevState: Readonly<GridBoardEditorState>, snapshot?: any): void {
+        if(prevProps.boardModel !== this.props.boardModel) {
+            prevProps.boardModel.removeListener(this.onPositionModelUpdate);
+            this.props.boardModel.addListener(this.onPositionModelUpdate);
         }
     }
 
     componentWillUnmount(): void {
-        this.props.positionModel.removeListener(this.onPositionModelUpdate);
+        this.props.boardModel.removeListener(this.onPositionModelUpdate);
     }
 
     onPositionModelUpdate() {
@@ -75,7 +75,6 @@ export class GridPositionModelEdit extends React.Component<GridPositionModelEdit
 
     onDrop(event: React.DragEvent<HTMLDivElement>) {
         event.preventDefault();
-        console.log("drop");
         const data = event.dataTransfer.getData("json/startpage-widget");
         if(data === null) return;
         const widget = WidgetDescriptor.fromJson(data);
@@ -84,11 +83,11 @@ export class GridPositionModelEdit extends React.Component<GridPositionModelEdit
         const position = {
             left: (event.clientX - rect.left) / rect.width,
             top: (event.clientY - rect.top) / rect.height,
-            width: 1 / this.props.positionModel.num_cols,
-            height: 1 / this.props.positionModel.num_rows,
+            width: 1 / this.props.boardModel.num_cols,
+            height: 1 / this.props.boardModel.num_rows,
         };
-        this.props.positionModel.addWidget(widget, this.props.positionModel.fromFractionalPosition(position));
-        this.props.onMoveWidget(widget, this.props.positionModel.fromFractionalPosition(position));
+        this.props.boardModel.addWidget(widget, this.props.boardModel.fromFractionalPosition(position));
+        this.props.onMoveWidget(widget, this.props.boardModel.fromFractionalPosition(position));
     }
 
     onDragOver(event: React.DragEvent<HTMLDivElement>) {
@@ -155,30 +154,30 @@ export class GridPositionModelEdit extends React.Component<GridPositionModelEdit
         if(this.state.activeDragData !== null) {
             const x = this.state.activeDragData.mouseClientOffset.x - this.state.activeDragData.dragPixelOffset.x;
             const y = this.state.activeDragData.mouseClientOffset.y - this.state.activeDragData.dragPixelOffset.y;
-            const position = this.props.positionModel.toFractionalPosition(this.props.positionModel.widgets[this.state.activeDragData.index]!.position);
-            const newPosition = this.props.positionModel.fromFractionalPosition({
+            const position = this.props.boardModel.toFractionalPosition(this.props.boardModel.widgets[this.state.activeDragData.index]!.position);
+            const newPosition = this.props.boardModel.fromFractionalPosition({
                 left: x / this.rootRef.current!.clientWidth,
                 top: y / this.rootRef.current!.clientHeight,
                 width: position.width,
                 height: position.height,
             });
-            this.props.positionModel.widgets[this.state.activeDragData.index]!.position = newPosition;
+            this.props.boardModel.widgets[this.state.activeDragData.index]!.position = newPosition;
             this.setState({ activeDragData: null });
-            this.props.onMoveWidget(this.props.positionModel.widgets[this.state.activeDragData.index]!.widget, newPosition);
+            this.props.onMoveWidget(this.props.boardModel.widgets[this.state.activeDragData.index]!.widget, newPosition);
         }
         if(this.state.activeResizeData !== null) {
             const x = this.state.activeResizeData.mouseClientOffset.x - this.state.activeResizeData.dragPixelOffset.x;
             const y = this.state.activeResizeData.mouseClientOffset.y - this.state.activeResizeData.dragPixelOffset.y;
-            const position = this.props.positionModel.toFractionalPosition(this.props.positionModel.widgets[this.state.activeResizeData.index]!.position);
-            const newPosition = this.props.positionModel.fromFractionalPosition({
+            const position = this.props.boardModel.toFractionalPosition(this.props.boardModel.widgets[this.state.activeResizeData.index]!.position);
+            const newPosition = this.props.boardModel.fromFractionalPosition({
                 left: position.left,
                 top: position.top,
                 width: x / this.rootRef.current!.clientWidth - position.left,
                 height: y / this.rootRef.current!.clientHeight - position.top,
             });
-            this.props.positionModel.widgets[this.state.activeResizeData.index]!.position = newPosition;
+            this.props.boardModel.widgets[this.state.activeResizeData.index]!.position = newPosition;
             this.setState({ activeResizeData: null });
-            this.props.onMoveWidget(this.props.positionModel.widgets[this.state.activeResizeData.index]!.widget, newPosition);
+            this.props.onMoveWidget(this.props.boardModel.widgets[this.state.activeResizeData.index]!.widget, newPosition);
         }
     }
 
@@ -263,15 +262,15 @@ export class GridPositionModelEdit extends React.Component<GridPositionModelEdit
     renderDragPreview() {
         const dragData = this.getActiveDragData();
         if(dragData === null) return null;
-        const position = this.props.positionModel.toFractionalPosition(this.props.positionModel.widgets[dragData.index]!.position);
-        let gridPosition = this.props.positionModel.fromFractionalPosition({
+        const position = this.props.boardModel.toFractionalPosition(this.props.boardModel.widgets[dragData.index]!.position);
+        let gridPosition = this.props.boardModel.fromFractionalPosition({
             left: dragData.x,
             top: dragData.y,
             width: position.width,
             height: position.height,
         });
         if(dragData.type === 'resize') {
-            gridPosition = this.props.positionModel.fromFractionalPosition({
+            gridPosition = this.props.boardModel.fromFractionalPosition({
                 left: position.left,
                 top: position.top,
                 width: dragData.x - position.left,
@@ -280,13 +279,13 @@ export class GridPositionModelEdit extends React.Component<GridPositionModelEdit
         }
         return <FractionalPositioned
             className='bg-gray-200'
-            fractionalPosition={this.props.positionModel.toFractionalPosition(gridPosition)}
+            fractionalPosition={this.props.boardModel.toFractionalPosition(gridPosition)}
         />;
     }
 
     render() {
-        const cellHeightFraction = `${100 / this.props.positionModel.num_rows}%`;
-        const cellWidthFraction = `${100 / this.props.positionModel.num_cols}%`;
+        const cellHeightFraction = `${100 / this.props.boardModel.num_rows}%`;
+        const cellWidthFraction = `${100 / this.props.boardModel.num_cols}%`;
         return (
             <div
                 style={{
@@ -304,7 +303,7 @@ export class GridPositionModelEdit extends React.Component<GridPositionModelEdit
                 onDragEnter={this.onDragEnter}
             >
                 {this.renderDragPreview()}
-                {this.props.positionModel.widgets.map((item, index) => this.renderPart(item.widget, this.props.positionModel.toFractionalPosition(item.position), index))}
+                {this.props.boardModel.widgets.map((item, index) => this.renderPart(item.widget, this.props.boardModel.toFractionalPosition(item.position), index))}
             </div>
           );
     }

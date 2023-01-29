@@ -1,4 +1,4 @@
-import { FractionalPosition } from 'DataModel/PositionModel';
+import { FractionalPosition } from 'DataModel/BoardModel';
 import React from 'react';
 
 

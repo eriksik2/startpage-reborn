@@ -15,7 +15,7 @@ export function instantiateEditableProp(prop: EditablePropType) {
         case 'object':
             let obj: any = {};
             for (let key in prop.props) {
-                obj[key] = instantiateEditableProp(prop.props[key]);
+                obj[key] = instantiateEditableProp(prop.props[key]!);
             }
             return obj;
     }
@@ -120,6 +120,9 @@ export class WidgetDescriptor<T extends EditableWidgetType<any>> {
     public static fromJson(json: string): WidgetDescriptor<any> {
         const obj = JSON.parse(json);
         const componentType = knownComponents[obj.componentType];
+        if (componentType == undefined) {
+            throw new Error(`Unknown component type: ${obj.componentType}`);
+        }
         const props = obj.props;
         return new WidgetDescriptor(componentType, props);
     }

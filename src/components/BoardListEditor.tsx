@@ -68,7 +68,7 @@ export class BoardListEditor extends React.Component<BoardListEditorProps> {
 
     render() {
         return <div
-            className="w-full h-full flex flex-row items-center justify-center"
+            className="w-full h-full flex flex-wrap flex-row items-center justify-center content-center overflow-auto"
         >
             {this.props.appModel.boards.map((board, index) => {
                 return this.renderItem(index);

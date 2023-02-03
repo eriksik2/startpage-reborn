@@ -5,20 +5,33 @@ type ViewportAspectRatioProps = {
 	children: React.ReactNode | React.ReactNode[],
 }
 
-export default class ViewportAspectRatio extends React.Component<ViewportAspectRatioProps, {}> {
+type ViewportAspectRatioState = {
+    scalingAxis: 'width' | 'height' | 'none',
+};
+
+export default class ViewportAspectRatio extends React.Component<ViewportAspectRatioProps, ViewportAspectRatioState> {
     static defaultProps = {
         children: null,
     };
 
+    rootRef: React.RefObject<HTMLDivElement>;
+
     constructor(props: ViewportAspectRatioProps) {
         super(props);
-        this.state = {};
+        this.state = {
+            scalingAxis: 'none',
+        };
+        this.rootRef = React.createRef();
 
         this.handleResize = this.handleResize.bind(this);
     }
 
     componentDidMount() {
-        window.addEventListener('resize', this.handleResize);
+        //window.addEventListener('resize', this.handleResize);
+        
+        // TODO: Only do this.handleResize() whenever the window is resized or when the containing element is resized.
+        const fps = 144;
+        setInterval(this.handleResize, 1000 / fps);
     }
 
     handleResize() {
@@ -48,15 +61,41 @@ export default class ViewportAspectRatio extends React.Component<ViewportAspectR
         }
     }
 
+    getScalingAxis() {
+        const vpSize = this.getViewportSize();
+        const vpWidth = vpSize[0]!;
+        const vpHeight = vpSize[1]!;
+
+        const root = this.rootRef.current;
+        if (root == null) return 'none';
+
+        const maxRect = root!.getBoundingClientRect();
+        const maxWidth = maxRect.width;
+        const maxHeight = maxRect.height;
+        
+        const widthRatio = maxWidth / vpWidth;
+        const heightRatio = maxHeight / vpHeight;
+
+        return widthRatio < heightRatio ? 'width' : 'height';
+    }
+
     render() {
         const [vpWidth, vpHeight] = this.getViewportSize();
+        const axis = this.getScalingAxis();
         return (
             <div
-                style={{
-                    aspectRatio: `${vpWidth}/${vpHeight}`,
-                }}
+                className='w-full h-full flex flex-col justify-center items-center'
+                ref={this.rootRef}
             >
-                {this.props.children}
+                <div
+                    style={{
+                        aspectRatio: `${vpWidth}/${vpHeight}`,
+                        width: axis === 'width' ? '100%' : 'auto',
+                        height: axis === 'height' ? '100%' : 'auto',
+                    }}
+                >
+                    {this.props.children}
+                </div>
             </div>
         );
     }

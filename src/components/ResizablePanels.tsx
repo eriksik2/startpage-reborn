@@ -1,33 +1,35 @@
 
 import React from 'react';
 
-type ResizableColumnsProps = {
+type ResizablePanelsProps = {
+    direction?: 'horizontal' | 'vertical';
+    separator?: React.ReactNode;
+    separatorWidth?: string;
     children: React.ReactNode | React.ReactNode[];
-    separator: React.ReactNode;
-} & React.HTMLAttributes<HTMLDivElement>;
+};
 
-type ResizableColumnsState = {
+type ResizablePanelsState = {
     lastWidthsForNumberOfChildren: Map<number, number[]>;
     widths: number[];
     activeDragData: {
         index: number,
-        startX: number,
+        startXY: number,
     } | null;
 }
 
-export default class ResizableColumns extends React.Component<ResizableColumnsProps, ResizableColumnsState> {
+export default class ResizablePanels extends React.Component<ResizablePanelsProps, ResizablePanelsState> {
     static defaultProps = {
-        children: null,
+        direction: 'horizontal',
         separator: <div
-            className="w-2 bg-slate-400"
-        >
-
-        </div>,
+            className="w-full h-full bg-slate-400"
+        />,
+        separatorWidth: "0.5rem",
+        children: null,
     };
 
     rootRef: React.RefObject<HTMLDivElement>;
 
-    constructor(props: ResizableColumnsProps) {
+    constructor(props: ResizablePanelsProps) {
         super(props);
 
         this.state = {
@@ -47,13 +49,13 @@ export default class ResizableColumns extends React.Component<ResizableColumnsPr
         this.recalculateWidths();
     }
 
-    componentDidUpdate(prevProps: Readonly<ResizableColumnsProps>, prevState: Readonly<ResizableColumnsState>, snapshot?: any): void {
+    componentDidUpdate(prevProps: Readonly<ResizablePanelsProps>, prevState: Readonly<ResizablePanelsState>, snapshot?: any): void {
         if(prevProps.children !== this.props.children) {
             this.recalculateWidths(prevProps, prevState);
         }
     }
 
-    recalculateWidths(prevProps?: Readonly<ResizableColumnsProps>, prevState?: Readonly<ResizableColumnsState>): void {
+    recalculateWidths(prevProps?: Readonly<ResizablePanelsProps>, prevState?: Readonly<ResizablePanelsState>): void {
         if(prevProps != null && prevState != null) {
             const prevChildren = React.Children.toArray(prevProps.children);
             this.setState({
@@ -84,11 +86,13 @@ export default class ResizableColumns extends React.Component<ResizableColumnsPr
     }
 
     handleMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent>, index: number) {
-        const localX = event.clientX - this.rootRef.current!.getBoundingClientRect().left;
+        const localXY = this.props.direction === 'horizontal'
+            ? event.clientX - this.rootRef.current!.getBoundingClientRect().left
+            : event.clientY - this.rootRef.current!.getBoundingClientRect().top;
         this.setState({
             activeDragData: {
                 index: index,
-                startX: localX,
+                startXY: localXY,
             }
         });
     }
@@ -96,8 +100,14 @@ export default class ResizableColumns extends React.Component<ResizableColumnsPr
     handleMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
         if(this.state.activeDragData == null) return;
         const widths = this.state.widths.slice();
-        const localX = event.clientX - this.rootRef.current!.getBoundingClientRect().left;
-        const localPercent = localX / this.rootRef.current!.getBoundingClientRect().width;
+        const localXY = this.props.direction === 'horizontal'
+            ? event.clientX - this.rootRef.current!.getBoundingClientRect().left
+            : event.clientY - this.rootRef.current!.getBoundingClientRect().top;
+
+        const localPercent = this.props.direction === 'horizontal'
+            ? localXY / this.rootRef.current!.getBoundingClientRect().width
+            : localXY / this.rootRef.current!.getBoundingClientRect().height;
+
         const newPercentForIndex = localPercent - widths.slice(0, this.state.activeDragData.index).reduce((a, b) => a + b, 0);
         const newPercentForNextIndex = 1 - newPercentForIndex;
         widths[this.state.activeDragData.index] = newPercentForIndex;
@@ -115,32 +125,24 @@ export default class ResizableColumns extends React.Component<ResizableColumnsPr
 
 
     public render() {
-        const divProps: any = { ...this.props };
-        delete divProps.children;
-        delete divProps.separator;
-        divProps.className = (divProps.className ?? "") + " flex flex-row items-stretch";
-        const oldOnMouseMove = divProps.onMouseMove;
-        divProps.onMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-            this.handleMouseMove(event);
-            if(oldOnMouseMove != null) oldOnMouseMove(event);
-        };
-        const oldOnMouseUp = divProps.onMouseUp;
-        divProps.onMouseUp = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-            this.handleMouseUp();
-            if(oldOnMouseUp != null) oldOnMouseUp(event);
-        };
 
         const children = React.Children.toArray(this.props.children);
         return (
             <div
                 ref={this.rootRef}
-                {...divProps}
+                className="w-full h-full flex items-stretch"
+                onMouseMove={this.handleMouseMove}
+                onMouseUp={this.handleMouseUp}
+                style={{
+                    flexDirection: this.props.direction === 'horizontal' ? 'row' : 'column',
+                }}
             >
                 {React.Children.map(children, (child, index) => {
                     return <>
                         <div
                             style={{
-                                width: this.state.widths[index]! * 100 + "%",
+                                width: this.props.direction === 'horizontal' ? this.state.widths[index]! * 100 + "%" : '100%',
+                                height: this.props.direction === 'horizontal' ? '100%' : this.state.widths[index]! * 100 + "%",
                             }}
                         >
                             {child}
@@ -150,7 +152,14 @@ export default class ResizableColumns extends React.Component<ResizableColumnsPr
                                 className="flex flex-row items-stretch"
                                 onMouseDown={(event) => this.handleMouseDown(event, index)}
                             >
-                                {this.props.separator}
+                                <div
+                                    style={{
+                                        width: this.props.direction === 'horizontal' ? this.props.separatorWidth : '100%',
+                                        height: this.props.direction === 'horizontal' ? '100%' : this.props.separatorWidth,
+                                    }}
+                                >
+                                    {this.props.separator}
+                                </div>
                             </div>
                             : null
                         }

@@ -8,7 +8,7 @@ import { BoardDisplay } from './BoardDisplay';
 import { GridBoardEditor } from './GridBoardEditor';
 import ViewportAspectRatio from './ViewportAspectRatio';
 import { EditSidebar } from './EditSidebar';
-import ResizableColumns from './ResizableColumns';
+import ResizablePanels from './ResizablePanels';
 import { DropDownSection } from './DropDownSection';
 import { WidgetPreview } from './WidgetPreview';
 import { WidgetSettingsEdit } from './WidgetSettingsEdit';
@@ -22,6 +22,7 @@ import { NumberControl } from 'SettingsModel/Controls/NumberControl';
 import { ObjectControl } from 'SettingsModel/Controls/ObjectControl';
 import { ListControl } from 'SettingsModel/Controls/ListControl';
 import { YoutubeWidget } from './Widgets/YoutubeWidget';
+import { BoardListEditor } from './BoardListEditor';
 
 type App2Props = {
 };
@@ -67,6 +68,7 @@ export class App2 extends React.Component<App2Props, App2State> {
     this.onModelUpdate = this.onModelUpdate.bind(this);
     this.onSelect = this.onSelect.bind(this);
     this.onSelectedWidgetChange = this.onSelectedWidgetChange.bind(this);
+    this.setActiveBoard = this.setActiveBoard.bind(this);
   }
 
   componentDidMount(): void {
@@ -128,17 +130,32 @@ export class App2 extends React.Component<App2Props, App2State> {
     return (
       <ModeContext.Provider value={this.state.mode}>
         <div className="h-full w-full z-10">
-          <ResizableColumns className="h-full w-full">
+          <ResizablePanels>
             <div className="w-full h-full flex flex-col items-stretch justify-center">
-              <ViewportAspectRatio>
-                {this.state.mode === "display"
-                    ? <BoardDisplay boardModel={this.getActiveBoard()} />
-                    : <GridBoardEditor
-                      boardModel={this.getActiveBoard() as GridBoardModel}
-                      onSelect={this.onSelect}
+              <ResizablePanels
+                direction='vertical'
+              >
+                <ViewportAspectRatio>
+                  <div className="w-full h-full flex flex-col items-stretch justify-center">
+                    {this.state.mode === "display"
+                        ? <BoardDisplay boardModel={this.getActiveBoard()} />
+                        : <GridBoardEditor
+                          boardModel={this.getActiveBoard() as GridBoardModel}
+                          onSelect={this.onSelect}
+                        />
+                    }
+                  </div>
+                </ViewportAspectRatio>
+                {this.state.mode == "edit"
+                  ? <div className="w-full h-full flex flex-col items-stretch justify-center">
+                    <BoardListEditor
+                      appModel={this.state.appModel}
+                      onSelectBoard={this.setActiveBoard}
                     />
+                  </div>
+                  : null
                 }
-              </ViewportAspectRatio>
+              </ResizablePanels>
             </div>
             {this.state.mode === "edit" &&
               <EditSidebar mode='opened'>
@@ -165,7 +182,7 @@ export class App2 extends React.Component<App2Props, App2State> {
                 </DropDownSection>
               </EditSidebar>
             }
-          </ResizableColumns>
+          </ResizablePanels>
           <div className="absolute top-0 left-0">
             <button onClick={() => this.setState({ mode: "display" })}>Display</button>
             <button onClick={() => this.setState({ mode: "edit" })}>Edit</button>

@@ -15,7 +15,10 @@ type ResizablePanelsState = {
         index: number,
         startXY: number,
     } | null;
+    childPanels: ResizablePanels[];
 }
+
+const PanelsContext = React.createContext<ResizablePanels | null>(null);
 
 export default class ResizablePanels extends React.Component<ResizablePanelsProps, ResizablePanelsState> {
     static defaultProps = {
@@ -28,6 +31,7 @@ export default class ResizablePanels extends React.Component<ResizablePanelsProp
     };
 
     rootRef: React.RefObject<HTMLDivElement>;
+    separatorRef: React.RefObject<HTMLDivElement>;
 
     constructor(props: ResizablePanelsProps) {
         super(props);
@@ -36,6 +40,7 @@ export default class ResizablePanels extends React.Component<ResizablePanelsProp
             lastWidthsForNumberOfChildren: new Map(),
             widths: [],
             activeDragData: null,
+            childPanels: [],
         }
 
         this.handleMouseDown = this.handleMouseDown.bind(this);
@@ -43,6 +48,7 @@ export default class ResizablePanels extends React.Component<ResizablePanelsProp
         this.handleMouseUp = this.handleMouseUp.bind(this);
 
         this.rootRef = React.createRef();
+        this.separatorRef = React.createRef();
     }
 
     componentDidMount(): void {
@@ -85,6 +91,29 @@ export default class ResizablePanels extends React.Component<ResizablePanelsProp
         });
     }
 
+    getIndexForMousePosition(event: React.MouseEvent<HTMLDivElement, MouseEvent>): number | null {
+        const separatorPx = this.props.direction === 'horizontal'
+            ? this.separatorRef.current!.getBoundingClientRect().width
+            : this.separatorRef.current!.getBoundingClientRect().height;
+        const separatorPercent = this.props.direction === 'horizontal'
+            ? separatorPx / this.rootRef.current!.getBoundingClientRect().width
+            : separatorPx / this.rootRef.current!.getBoundingClientRect().height;
+        const localXY = this.props.direction === 'horizontal'
+            ? event.clientX - this.rootRef.current!.getBoundingClientRect().left
+            : event.clientY - this.rootRef.current!.getBoundingClientRect().top;
+        const localPercent = this.props.direction === 'horizontal'
+            ? localXY / this.rootRef.current!.getBoundingClientRect().width
+            : localXY / this.rootRef.current!.getBoundingClientRect().height;
+        let currentPercent = 0;
+        for(let i = 0; i < this.state.widths.length; i++) {
+            currentPercent += this.state.widths[i]!;
+            if(localPercent < currentPercent + separatorPercent && localPercent > currentPercent) {
+                return i;
+            }
+        }
+        return null;
+    }
+
     handleMouseDown(event: React.MouseEvent<HTMLDivElement, MouseEvent>, index: number) {
         const localXY = this.props.direction === 'horizontal'
             ? event.clientX - this.rootRef.current!.getBoundingClientRect().left
@@ -95,6 +124,10 @@ export default class ResizablePanels extends React.Component<ResizablePanelsProp
                 startXY: localXY,
             }
         });
+        for(const childPanel of this.state.childPanels) {
+            const cIndex = childPanel.getIndexForMousePosition(event);
+            if(cIndex != null) childPanel.handleMouseDown(event, cIndex);
+        }
     }
 
     handleMouseMove(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -115,12 +148,22 @@ export default class ResizablePanels extends React.Component<ResizablePanelsProp
         this.setState({
             widths: widths,
         });
+        for(const childPanel of this.state.childPanels) {
+            childPanel.handleMouseMove(event);
+        }
     }
 
     handleMouseUp() {
         this.setState({
             activeDragData: null,
         });
+        for(const childPanel of this.state.childPanels) {
+            childPanel.handleMouseUp();
+        }
+    }
+
+    registerChildPanel(panel: ResizablePanels) {
+        this.state.childPanels.push(panel);
     }
 
 
@@ -128,44 +171,55 @@ export default class ResizablePanels extends React.Component<ResizablePanelsProp
 
         const children = React.Children.toArray(this.props.children);
         return (
-            <div
-                ref={this.rootRef}
-                className="w-full h-full flex items-stretch"
-                onMouseMove={this.handleMouseMove}
-                onMouseUp={this.handleMouseUp}
-                style={{
-                    flexDirection: this.props.direction === 'horizontal' ? 'row' : 'column',
+            <PanelsContext.Consumer>
+                {(parent) => {
+                    if(parent != null && parent.props.direction !== this.props.direction) {
+                        parent.registerChildPanel(this);
+                    }
+                    return <div
+                        ref={this.rootRef}
+                        className="w-full h-full flex items-stretch"
+                        onMouseMove={this.handleMouseMove}
+                        onMouseUp={this.handleMouseUp}
+                        style={{
+                            flexDirection: this.props.direction === 'horizontal' ? 'row' : 'column',
+                        }}
+                    >
+                        <PanelsContext.Provider value={this}>
+                            {React.Children.map(children, (child, index) => {
+                                return <>
+                                    <div
+                                        style={{
+                                            width: this.props.direction === 'horizontal' ? this.state.widths[index]! * 100 + "%" : '100%',
+                                            height: this.props.direction === 'horizontal' ? '100%' : this.state.widths[index]! * 100 + "%",
+                                        }}
+                                    >
+                                        {child}
+                                    </div>
+                                    {index < children.length - 1
+                                        ? <div
+                                            className="flex flex-row items-stretch"
+                                            onMouseDown={(event) => this.handleMouseDown(event, index)}
+                                        >
+                                            <div
+                                                ref={index == 0 ? this.separatorRef : null}
+                                                style={{
+                                                    width: this.props.direction === 'horizontal' ? this.props.separatorWidth : '100%',
+                                                    height: this.props.direction === 'horizontal' ? '100%' : this.props.separatorWidth,
+                                                    cursor: this.props.direction === 'horizontal' ? 'ew-resize' : 'ns-resize',
+                                                }}
+                                            >
+                                                {this.props.separator}
+                                            </div>
+                                        </div>
+                                        : null
+                                    }
+                                </>
+                            })}
+                        </PanelsContext.Provider>
+                    </div>;
                 }}
-            >
-                {React.Children.map(children, (child, index) => {
-                    return <>
-                        <div
-                            style={{
-                                width: this.props.direction === 'horizontal' ? this.state.widths[index]! * 100 + "%" : '100%',
-                                height: this.props.direction === 'horizontal' ? '100%' : this.state.widths[index]! * 100 + "%",
-                            }}
-                        >
-                            {child}
-                        </div>
-                        {index < children.length - 1
-                            ? <div
-                                className="flex flex-row items-stretch"
-                                onMouseDown={(event) => this.handleMouseDown(event, index)}
-                            >
-                                <div
-                                    style={{
-                                        width: this.props.direction === 'horizontal' ? this.props.separatorWidth : '100%',
-                                        height: this.props.direction === 'horizontal' ? '100%' : this.props.separatorWidth,
-                                    }}
-                                >
-                                    {this.props.separator}
-                                </div>
-                            </div>
-                            : null
-                        }
-                    </>
-                })}
-            </div>
+            </PanelsContext.Consumer>
         );
     }
 }

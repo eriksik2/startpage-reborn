@@ -86,6 +86,9 @@ export default class ViewportAspectRatio extends React.Component<ViewportAspectR
             <div
                 className='w-full h-full flex flex-col justify-center items-center'
                 ref={this.rootRef}
+                style={{
+                    aspectRatio: `${vpWidth}/${vpHeight}`,
+                }}
             >
                 <div
                     style={{

@@ -55,7 +55,7 @@ export class BoardListEditor extends React.Component<BoardListEditorProps> {
         return <div
             key={index}
             onClick={onClick}
-            className=" bg-gray-200 rounded-lg m-2 p-2"
+            className="bg-blue-200 rounded-lg m-2 p-2 w-32"
         >
             {isAddButton
                 ? <BoardPreview>
@@ -68,7 +68,7 @@ export class BoardListEditor extends React.Component<BoardListEditorProps> {
 
     render() {
         return <div
-            className="w-full h-full flex flex-row items-stretch justify-center"
+            className="w-full h-full flex flex-row items-center justify-center"
         >
             {this.props.appModel.boards.map((board, index) => {
                 return this.renderItem(index);

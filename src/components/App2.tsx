@@ -3,25 +3,25 @@ import { GridBoardModel } from 'DataModel/GridBoardModel';
 import { BoardModel } from 'DataModel/BoardModel';
 import React from "react";
 import { WidgetDescriptor } from 'widgets/WidgetDescriptor';
-import { LinksComponent } from './LinksComponent';
+import { LinksWidget } from './Widgets/LinksWidget';
 import { BoardDisplay } from './BoardDisplay';
 import { GridBoardEditor } from './GridBoardEditor';
 import ViewportAspectRatio from './ViewportAspectRatio';
 import { EditSidebar } from './EditSidebar';
 import ResizableColumns from './ResizableColumns';
 import { DropDownSection } from './DropDownSection';
-import { WidgetPreview } from './Widget';
+import { WidgetPreview } from './WidgetPreview';
 import { WidgetSettingsEdit } from './WidgetSettingsEdit';
-import { DateTimeComponent } from './DateTimeComponent';
-import { QuoteComponent } from './QuoteComponent';
-import { WeatherComponent } from './WeatherComponent';
+import { DateTimeWidget } from './Widgets/DateTimeWidget';
+import { QuoteWidget } from './Widgets/QuoteWidget';
+import { WeatherWidget } from './Widgets/WeatherWidget';
 import { AppModel } from 'DataModel/AppModel';
 import { firstOpenAppModel } from 'utils/firstOpenAppModel';
 import { SliderControl } from 'SettingsModel/Controls/SliderControl';
 import { NumberControl } from 'SettingsModel/Controls/NumberControl';
 import { ObjectControl } from 'SettingsModel/Controls/ObjectControl';
 import { ListControl } from 'SettingsModel/Controls/ListControl';
-import { YoutubeComponent } from './YoutubeComponent';
+import { YoutubeWidget } from './Widgets/YoutubeWidget';
 
 type App2Props = {
 };
@@ -47,20 +47,20 @@ export class App2 extends React.Component<App2Props, App2State> {
         activeBoardIndex: 0,
         selected: null,
         widgets: [
-          new WidgetDescriptor(DateTimeComponent, {}),
-          new WidgetDescriptor(QuoteComponent, {
+          new WidgetDescriptor(DateTimeWidget, {}),
+          new WidgetDescriptor(QuoteWidget, {
             useCustomQuote: true,
             customQuote: "Never let your dreams be dreams.",
             customAuthor: "Sun Tzu",
           }),
-          new WidgetDescriptor(LinksComponent, {
+          new WidgetDescriptor(LinksWidget, {
             links: [
               { name: "Google", url: "https://google.com" },
               { name: "Reddit", url: "https://reddit.com" },
             ],
           }),
-          new WidgetDescriptor(WeatherComponent, {}),
-          new WidgetDescriptor(YoutubeComponent, {}),
+          new WidgetDescriptor(WeatherWidget, {}),
+          new WidgetDescriptor(YoutubeWidget, {}),
         ],
     };
 

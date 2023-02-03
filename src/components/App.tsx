@@ -1,12 +1,12 @@
 import React from "react";
 import { EditableWidgetType, WidgetDescriptor } from "widgets/WidgetDescriptor";
-import { DateTimeComponent } from "./DateTimeComponent";
+import { DateTimeWidget } from "./Widgets/DateTimeWidget";
 import { DropDownSection } from "./DropDownSection";
 import { EditSidebar } from "./EditSidebar";
-import { LinksComponent } from "./LinksComponent";
-import { QuoteComponent } from "./QuoteComponent";
-import { WeatherComponent } from "./WeatherComponent";
-import { WidgetPreview } from "./Widget";
+import { LinksWidget } from "./Widgets/LinksWidget";
+import { QuoteWidget } from "./Widgets/QuoteWidget";
+import { WeatherWidget } from "./Widgets/WeatherWidget";
+import { WidgetPreview } from "./WidgetPreview";
 import { WidgetSettingsEdit } from "./WidgetSettingsEdit";
 
 
@@ -29,7 +29,7 @@ export class App extends React.Component<{}, AppState> {
     super(props);
     const grid = Array(3).fill(null).map(() => Array(5).fill(null));
     grid[0][2] = {
-      item: new WidgetDescriptor(LinksComponent, {
+      item: new WidgetDescriptor(LinksWidget, {
         links: [
           { name: "Google", url: "https://google.com" },
           { name: "Reddit", url: "https://reddit.com" },
@@ -39,7 +39,7 @@ export class App extends React.Component<{}, AppState> {
       height: 1,
     };
     grid[1][0] = {
-      item: new WidgetDescriptor(DateTimeComponent, {
+      item: new WidgetDescriptor(DateTimeWidget, {
         showTime: false,
         showYear: false,
         showDayOfWeek: false,
@@ -48,7 +48,7 @@ export class App extends React.Component<{}, AppState> {
       height: 1,
     };
     grid[1][2] = {
-      item: new WidgetDescriptor(DateTimeComponent, {
+      item: new WidgetDescriptor(DateTimeWidget, {
         showYear: false,
         showDate: false,
       }),
@@ -56,7 +56,7 @@ export class App extends React.Component<{}, AppState> {
       height: 1,
     };
     grid[1][4] = {
-      item: new WidgetDescriptor(DateTimeComponent, {
+      item: new WidgetDescriptor(DateTimeWidget, {
         showTime: false,
         showDayOfWeek: false,
         showDate: false,
@@ -65,25 +65,25 @@ export class App extends React.Component<{}, AppState> {
       height: 1,
     };
     grid[2][2] = {
-      item: new WidgetDescriptor(QuoteComponent, {}),
+      item: new WidgetDescriptor(QuoteWidget, {}),
       width: 1,
       height: 1,
     };
     this.state = {
       widgets: [
-        new WidgetDescriptor(DateTimeComponent, {}),
-        new WidgetDescriptor(QuoteComponent, {
+        new WidgetDescriptor(DateTimeWidget, {}),
+        new WidgetDescriptor(QuoteWidget, {
           useCustomQuote: true,
           customQuote: "Never let your dreams be dreams.",
           customAuthor: "Sun Tzu",
         }),
-        new WidgetDescriptor(LinksComponent, {
+        new WidgetDescriptor(LinksWidget, {
           links: [
             { name: "Google", url: "https://google.com" },
             { name: "Reddit", url: "https://reddit.com" },
           ],
         }),
-        new WidgetDescriptor(WeatherComponent, {}),
+        new WidgetDescriptor(WeatherWidget, {}),
       ],
       grid: grid,
       mode: "view",

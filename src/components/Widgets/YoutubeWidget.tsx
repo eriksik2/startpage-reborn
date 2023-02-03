@@ -1,17 +1,17 @@
 import React from "react"
 import { editableBoolean, editableString } from "widgets/WidgetDescriptor"
-import { ModeContext } from './App2'
+import { ModeContext } from '../App2'
 
 
-type YoutubeComponentProps = {
+type YoutubeWidgetProps = {
     url: string,
     autoplay: boolean,
 }
 
-type YoutubeComponentState = {
+type YoutubeWidgetState = {
 }
 
-export class YoutubeComponent extends React.Component<YoutubeComponentProps, YoutubeComponentState> {
+export class YoutubeWidget extends React.Component<YoutubeWidgetProps, YoutubeWidgetState> {
     static defaultProps = {
         url: "",
         autoplay: false,
@@ -26,7 +26,7 @@ export class YoutubeComponent extends React.Component<YoutubeComponentProps, You
         }),
     }
 
-    constructor(props: YoutubeComponentProps) {
+    constructor(props: YoutubeWidgetProps) {
         super(props);
         this.state = {
         };

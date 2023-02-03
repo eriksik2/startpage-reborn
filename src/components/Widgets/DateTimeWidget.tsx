@@ -3,18 +3,18 @@ import dateFormat from "dateformat";
 import { editableBoolean } from "widgets/WidgetDescriptor";
 
 
-type StateType = {
+type DateTimeWidgetState = {
   date: Date;
 }
 
-type PropsType = {
+type DateTimeWidgetProps = {
   showTime: boolean;
   showDayOfWeek: boolean;
   showDate: boolean;
   showYear: boolean;
 }
 
-export class DateTimeComponent extends React.Component<PropsType, StateType> {
+export class DateTimeWidget extends React.Component<DateTimeWidgetProps, DateTimeWidgetState> {
   static defaultProps = {
     showTime: true,
     showDayOfWeek: true,
@@ -37,7 +37,7 @@ export class DateTimeComponent extends React.Component<PropsType, StateType> {
     }),
   };
 
-  constructor(props: PropsType) {
+  constructor(props: DateTimeWidgetProps) {
       super(props);
       this.state = {
           date: new Date(),

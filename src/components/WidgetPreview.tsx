@@ -1,15 +1,15 @@
 import React from "react";
 import { WidgetDescriptor } from "widgets/WidgetDescriptor";
 
-type WidgetProps = {
+type PreviewWidgetProps = {
     data: WidgetDescriptor<any>,
 }
 
-type WidgetState = {
+type PreviewWidgetState = {
 }
 
-export class WidgetPreview extends React.Component<WidgetProps, WidgetState> {
-    constructor(props: WidgetProps) {
+export class WidgetPreview extends React.Component<PreviewWidgetProps, PreviewWidgetState> {
+    constructor(props: PreviewWidgetProps) {
         super(props);
         this.state = {
         };

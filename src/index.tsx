@@ -4,7 +4,7 @@ import { App2 } from 'components/App2'
 import { BoardDisplay } from 'components/BoardDisplay'
 import { GridBoardModel } from 'DataModel/GridBoardModel'
 import { WidgetDescriptor } from 'widgets/WidgetDescriptor'
-import { LinksComponent } from 'components/LinksComponent'
+import { LinksWidget } from 'components/Widgets/LinksWidget'
 
 const container = document.getElementById('root') as HTMLDivElement
 const root = createRoot(container)

@@ -13,7 +13,7 @@ type WeatherDay = {
     weatherCode: number,
 };
 
-type WeatherComponentProps = {
+type WeatherWidgetProps = {
     daysShown?: number,
     temperatureUnit?: "celsius" | "fahrenheit",
     dayNameFormat?: "short" | "long",
@@ -23,12 +23,12 @@ type WeatherComponentProps = {
 };
 
 
-type WeatherComponentState = {
+type WeatherWidgetState = {
     weather: WeatherDay[],
     showDetails: number | null,
 };
 
-export class WeatherComponent extends React.Component<WeatherComponentProps, WeatherComponentState> {
+export class WeatherWidget extends React.Component<WeatherWidgetProps, WeatherWidgetState> {
     static defaultProps = {
         daysShown: 3,
         temperatureUnit: "celsius",
@@ -62,7 +62,7 @@ export class WeatherComponent extends React.Component<WeatherComponentProps, Wea
         }),
     };
 
-    constructor(props: WeatherComponentProps) {
+    constructor(props: WeatherWidgetProps) {
         super(props);
         this.state = {
             weather: [],
@@ -78,7 +78,7 @@ export class WeatherComponent extends React.Component<WeatherComponentProps, Wea
         this.refreshData();
     }
 
-    componentDidUpdate(prevProps: Readonly<WeatherComponentProps>, prevState: Readonly<WeatherComponentState>, snapshot?: any): void {
+    componentDidUpdate(prevProps: Readonly<WeatherWidgetProps>, prevState: Readonly<WeatherWidgetState>, snapshot?: any): void {
         if(prevProps.daysShown !== this.props.daysShown) {
             if (prevProps.daysShown! < this.props.daysShown!) {
                 this.refreshData();
@@ -137,7 +137,7 @@ export class WeatherComponent extends React.Component<WeatherComponentProps, Wea
 
     renderWeatherCode(index: number) {
         const iconSize = "0.8em";
-        switch (this.state.weather[index].weatherCode) {
+        switch (this.state.weather[index]!.weatherCode) {
             case 0:
                 return <span title="Clear"><BsSunFill size={iconSize}/></span>
             case 1:

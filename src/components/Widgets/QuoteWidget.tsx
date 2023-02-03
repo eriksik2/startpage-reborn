@@ -2,19 +2,19 @@ import React from "react"
 import { editableBoolean, editableString } from "widgets/WidgetDescriptor"
 
 
-type QuoteComponentProps = {
+type QuoteWidgetProps = {
     useCustomQuote: boolean,
     customQuote: string,
     customAuthor: string,
     showAuthor: boolean,
 }
 
-type QuoteComponentState = {
+type QuoteWidgetState = {
     fetchedQuote?: string,
     fetchedAuthor?: string,
 }
 
-export class QuoteComponent extends React.Component<QuoteComponentProps, QuoteComponentState> {
+export class QuoteWidget extends React.Component<QuoteWidgetProps, QuoteWidgetState> {
     static defaultProps = {
         useCustomQuote: false,
         customQuote: "",
@@ -28,18 +28,18 @@ export class QuoteComponent extends React.Component<QuoteComponentProps, QuoteCo
         }),
         customQuote: editableString(undefined, {
             displayName: "Custom quote",
-            showInSettings: (props: QuoteComponentProps) => props.useCustomQuote,
+            showInSettings: (props: QuoteWidgetProps) => props.useCustomQuote,
         }),
         customAuthor: editableString(undefined, {
             displayName: "Custom author",
-            showInSettings: (props: QuoteComponentProps) => props.useCustomQuote && props.showAuthor,
+            showInSettings: (props: QuoteWidgetProps) => props.useCustomQuote && props.showAuthor,
         }),
         showAuthor: editableBoolean({
             displayName: "Show author",
         }),
     }
 
-    constructor(props: QuoteComponentProps) {
+    constructor(props: QuoteWidgetProps) {
         super(props);
         this.state = {
         };
@@ -52,7 +52,7 @@ export class QuoteComponent extends React.Component<QuoteComponentProps, QuoteCo
         
     }
 
-    componentDidUpdate(prevProps: Readonly<QuoteComponentProps>, prevState: Readonly<QuoteComponentState>, snapshot?: any): void {
+    componentDidUpdate(prevProps: Readonly<QuoteWidgetProps>, prevState: Readonly<QuoteWidgetState>, snapshot?: any): void {
         if(!this.props.useCustomQuote && prevProps.useCustomQuote) {
             this.refreshQuote();
         }

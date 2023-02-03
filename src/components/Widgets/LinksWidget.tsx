@@ -8,15 +8,15 @@ type Link = {
     pic?: string,
 }
 
-type LinksComponentProps = {
+type LinksWidgetProps = {
     name: string,
     links: Link[],
 }
 
-type LinksComponentState = {
+type LinksWidgetState = {
 }
 
-export class LinksComponent extends React.Component<LinksComponentProps, LinksComponentState> {
+export class LinksWidget extends React.Component<LinksWidgetProps, LinksWidgetState> {
     static defaultProps = {
         name: "",
         links: [],
@@ -38,14 +38,14 @@ export class LinksComponent extends React.Component<LinksComponentProps, LinksCo
         }),
     }
 
-    constructor(props: LinksComponentProps) {
+    constructor(props: LinksWidgetProps) {
         super(props);
         this.state = {
         };
     }
 
     renderLink(index: number) {
-        const link = this.props.links[index];
+        const link = this.props.links[index]!;
         return <div
             key={index}
             className="flex flex-col items-center justify-center w-full h-full"

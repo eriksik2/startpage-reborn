@@ -33,6 +33,7 @@ export class BoardDisplay extends React.Component<BoardDisplayProps, BoardDispla
         width: position.width * 100 + "%",
         height: position.height * 100 + "%",
       }}
+      className="overflow-hidden"
     >
         {widget.buildWidget()}
     </div>

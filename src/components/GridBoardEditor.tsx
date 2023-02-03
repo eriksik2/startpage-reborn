@@ -201,6 +201,7 @@ export class GridBoardEditor extends React.Component<GridBoardEditorProps, GridB
                 width: positionStyle.width,
                 height: positionStyle.height,
             }}
+            className="overflow-hidden"
         >
             <div
                 onMouseDown={(e) => this.onMouseDown(e, widget, position, index)}
